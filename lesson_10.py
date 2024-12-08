@@ -47,5 +47,6 @@ git config --global user.email "Ваш емейл"
 
 ЕЩЕ
 ЕЩЕ
+ЕЩЕ
 МОИ ПРАВКИ
 """
