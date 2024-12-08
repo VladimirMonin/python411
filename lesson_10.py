@@ -44,4 +44,5 @@ git init
 Настройки Гита - имя и емейл (потребуется в первый раз)
 git config --global user.name "Ваше Имя"
 git config --global user.email "Ваш емейл"
+
 """
