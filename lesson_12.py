@@ -115,3 +115,36 @@ result3 = is_adult(age=20, adult_age=16)
 Срез
 [::-1]
 """
+
+def is_palindrome(text: str) -> bool:
+    """
+    Функция проверки на палиндром
+
+    Arguments:
+        text -- строка которую нужно проверить
+
+    Returns:
+        bool -- True если строка палиндром, False если нет
+    """
+    ready_string = text.lower().replace(" ", "").replace(",", "").replace(".", "")
+    return ready_string == ready_string[::-1]
+
+
+import string
+
+def is_palindrome2(text: str) -> bool:
+    """
+    Функция проверки на палиндром с использованием translate
+    
+    Arguments:
+        text -- строка которую нужно проверить
+        
+    Returns:
+        bool -- True если строка палиндром, False если нет
+        
+    Example:
+        >>> is_palindrome("А роза упала на лапу Азора!")
+        True
+    """
+    clean_text = text.lower().translate(str.maketrans("", "", string.punctuation + " "))
+    return clean_text == clean_text[::-1]
