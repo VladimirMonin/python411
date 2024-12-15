@@ -25,116 +25,72 @@ Python функции. **kwargs. Модули. Библиотеки plyer и req
     - Структурирование кода в модули
 """
 
-# Kwargs
+# PIP
+"""
+pip list - список установленных пакетов
+pip install <package_name> - установить пакет
+pip install plyer requests pyinstaller
+pip freeze > requirements.txt - сохранить список пакетов в файл
+pip install -r requirements.txt - установить все пакеты из файла
+pip uninstall <package_name> - удалить пакет
+pip show <package_name> - информация о пакете
+pip search <package_name> - поиск пакетов
+pip upgrade <package_name> - обновить пакет
+"""
 
-# Простой пример распаковки словаря
-user = {"name": "Иван", "age": 25}
-name, age = user.values()  # ['Иван', 25] - раскидывается на две переменные
-print(f"Имя: {name}, Возраст: {age}")
+"""
+https://api.openweathermap.org/data/2.5/weather?&appid={API key}&units=metric&lang=ru
 
-
-# Пример посложнее - распаковка вложенного словаря
-student = {"info": {"name": "Мария", "age": 20}, "grades": {"math": 5, "physics": 4}}
-info, grades = student.values()
-print(f"Информация: {info}")
-print(f"Оценки: {grades}")
-
-
-# Распаковка с использованием **
-defaults = {"host": "localhost", "port": 8000}
-custom = {"port": 9000, "timeout": 30}
-config = {**defaults, **custom}  # port из custom перезапишет port из defaults
-print(f"Итоговая конфигурация: {config}")
-
-# Как это было бы через Update
-new_dict = {}
-new_dict.update(defaults)
-new_dict.update(custom)
-print(f"Итоговая конфигурация: {new_dict}")
+https://api.openweathermap.org/data/2.5/weather?q=Усть-Каменогорск&appid=23496c2a58b99648af590ee8a29c5348&units=metric&lang=ru
+"""
 
 
-########################################
+"""
+Это погодное приложение, которое работает на Python библиотеке requests, plyer.
+
+pip install plyer requests pyinstaller
+
+Образец ссылки https://api.openweathermap.org/data/2.5/weather?q=Москва&appid=23496c2a58b99648af590ee8a29c5348&units=metric&lang=ru
+
+{'coord': {'lon': 37.6156, 'lat': 55.7522}, 'weather': [{'id': 803, 'main': 'Clouds', 'description': 'облачно с прояснениями', 'icon': '04n'}], 'base': 'stations', 'main': {'temp': 0.93, 'feels_like': -3.44, 'temp_min': 0.24, 'temp_max': 0.93, 'pressure': 1022, 'humidity': 61, 'sea_level': 1022, 'grnd_level': 1002}, 'visibility': 10000, 'wind': {'speed': 4.47, 'deg': 214, 'gust': 11.97}, 'clouds': {'all': 64}, 'dt': 1733247335, 'sys': {'type': 2, 'id': 2095214, 'country': 'RU', 'sunrise': 1733204316, 'sunset': 1733230838}, 'timezone': 10800, 'id': 524901, 'name': 'Москва', 'cod': 200}
+
+"""
 
 
-def print_user_info(*args, **user_info):
-    """
-    Функция для вывода информации о пользователе
-    """
-    print(type(user_info))  #  <class 'dict'>
-    for key, value in user_info.items():
-        print(f"Ключ: {key}, Значение: {value}")
+import requests
+from plyer import notification
+# Просто сделаем запрос без функций
+
+CITY = "Усть-Каменогорск"
+API_KEY = "23496c2a58b99648af590ee8a29c5348"
+UNITS = "metric"
+LANGUAGE = "ru"
+
+url = fr'https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units={UNITS}&lang={LANGUAGE}'
+
+response = requests.get(url) # Сделали запрос и получили объект ответа
+print(response.status_code) # Получили статус ответа
+print(response.json()) # Получили объект Python из JSON
 
 
-print_user_info(name="Илья", last_name="Морозов", age=25)
+# Получим описание и температуру, и ощущается как
+weather_dict = response.json()
 
-user_info = {"name": "Екатерина", "age": 25, "city": "Москва"}
+# Temp
+temp = weather_dict['main']['temp']
+# Ощущается как
+feels_like = weather_dict['main']['feels_like']
+# Описание погоды
+description = weather_dict['weather'][0]['description']
 
-print_user_info(**user_info)
-print_user_info(
-    1,
-    2,
-    "Илья",
-    hobbies=["футбол", "программирование"],
+print(f'Температура: {temp}°C\nОщущается как: {feels_like}°C\nОписание: {description}')
+
+# Уведомление
+notification.notify(
+    title=f"Погода в {CITY}",
+    message=f"Температура: {temp}°C\nОщущается как: {feels_like}°C\nОписание: {description}",
+    app_name="Погода",
+    app_icon=None,
+    timeout=60,
+    toast=True,
 )
-
-config_open_ai = {
-    "model": "gpt-3.5-turbo",
-    "temperature": 0.7,
-    "max_tokens": 50,
-    "top_p": 1.0,
-    "frequency_penalty": 0.0,
-    "api_key": "sk-...",
-    "endpoints": "https://api.openai.com/v1/chat/completions",
-}
-
-
-def open_ai_request(**params):
-    # Тут вы можете разобрать словарь и добыть нужное
-    pass
-
-
-def open_ai_request2(
-    model: str,
-    temperature: float,
-    max_tokens: int,
-    top_p: float,
-    frequency_penalty: float,
-    presence_penalty: float,
-    api_key: str,
-    endpoints: str,
-):
-    # ЭТОТ вариант,
-    pass
-
-
-# open_ai_request2(**config_open_ai)
-
-open_ai_request2(
-    model="gpt-3.5-turbo",
-    temperature=0.7,
-    max_tokens=50,
-    top_p=1.0,
-    frequency_penalty=0.0,
-    presence_penalty=0,
-    api_key="sk-...",
-    endpoints="https://api.openai.com/v1/chat/completions",
-)
-
-user_info = {"name": "Екатерина", "age": 25, "city": "Москва"}
-
-
-def print_user_info2(name, age, city):
-    print(f"Имя: {name}, Возраст: {age}, Город: {city}")
-
-
-# print_user_info2(**user_info)
-
-# print(**user_info)
-
-# Конфиг для принта
-config = {
-    "sep": "+",
-    "end": "\n",
-}
-
-print("Hello", "World", **config)
