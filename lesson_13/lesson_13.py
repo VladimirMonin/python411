@@ -83,7 +83,6 @@ config_open_ai = {
     "max_tokens": 50,
     "top_p": 1.0,
     "frequency_penalty": 0.0,
-
     "api_key": "sk-...",
     "endpoints": "https://api.openai.com/v1/chat/completions",
 }
@@ -106,8 +105,9 @@ def open_ai_request2(
 ):
     # ЭТОТ вариант,
     pass
-    
-open_ai_request2(**config_open_ai)
+
+
+# open_ai_request2(**config_open_ai)
 
 open_ai_request2(
     model="gpt-3.5-turbo",
@@ -127,4 +127,14 @@ def print_user_info2(name, age, city):
     print(f"Имя: {name}, Возраст: {age}, Город: {city}")
 
 
-print_user_info(**user_info)
+# print_user_info2(**user_info)
+
+# print(**user_info)
+
+# Конфиг для принта
+config = {
+    "sep": "+",
+    "end": "\n",
+}
+
+print("Hello", "World", **config)
