@@ -85,3 +85,15 @@ with open(txt_file, "r", encoding="utf-8") as file:
 
 
 print(lines)
+
+# PRACTICE - функция для записи/дозаписи в txt файл
+"""
+Напишите функцию
+def write_to_file(file_name: str, *data: str, mode: str = "a", encoding: str = "utf-8") -> None:
+    ...
+
+которая принимает название файла, данные для записи и режим работы с файлом.
+
+data - коллеция строк, которые нужно записать в файл
+Пишите это в цикле for line in data:
+"""
