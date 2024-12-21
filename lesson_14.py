@@ -55,7 +55,7 @@ txt_file = "lesson_14.txt"
 # file.close()
 
 # Открытие файла для чтения
-file = open(txt_file, "r", encoding="utf-8")
+# file = open(txt_file, "r", encoding="utf-8")
 
 # Получаем спиоск строк
 # lines = file.readlines()
@@ -64,11 +64,24 @@ file = open(txt_file, "r", encoding="utf-8")
 # print(lines)
 
 # Получить одну строку
-line = file.readline()
-print(line.strip())
+# line = file.readline()
+# print(line.strip())
 
-line = file.readline()
-print(line, end="")
+# line = file.readline()
+# print(line, end="")
 
-line = file.readline()
-print(line)
+# line = file.readline()
+# print(line)
+
+# Закрытие файла
+# file.close()
+
+
+# Контекстный менеджер with
+
+with open(txt_file, "r", encoding="utf-8") as file:
+    # Получить список строк
+    lines = file.readlines()
+
+
+print(lines)
