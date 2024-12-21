@@ -3,3 +3,5 @@
 *.spec
 *build/
 *dist/
+*__pycache__
+lesson_14.txt
