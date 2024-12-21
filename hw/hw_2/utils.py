@@ -26,3 +26,36 @@
 - Описание: Запускает программу, выполняет вызовы вышеуказанных функций и обрабатывает вывод.
 
 """
+
+import requests
+from plyer import notification
+
+
+CITY = "Усть-Каменогорск"
+API_KEY = "23496c2a58b99648af590ee8a29c5348"
+UNITS = "metric"
+LANGUAGE = "ru"
+
+
+def get_weather(
+    city: str = CITY,
+    api_key: str = API_KEY,
+    units: str = UNITS,
+    language: str = LANGUAGE,
+) -> dict:
+    """
+    Функция получения информации о погоде
+
+    Keyword Arguments:
+        city -- (default: {CITY}) - Название города для получения прогноза погоды.
+        api_key -- (default: {API_KEY})  - Ключ API для доступа к сервису.
+        units --  (default: {UNITS}) - Единица измерения температуры (metric, imperial, standard).
+        language -- (default: {LANGUAGE}) - Язык интерфейса (ru, en, etc.).
+
+    Returns:
+        Возвращает словарь с информацией о погоде
+    """
+
+    url = rf"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units={units}&lang={language}"
+    response = requests.get(url)
+    return response.json()
