@@ -10,7 +10,7 @@
 # CITY
 
 # Хорошо. Мы знаем, что импортируем. И даже что используется а что нет.
-from utils import get_weather, format_weather_message, notify_weather
+from weather_utils.utils import get_weather, format_weather_message, notify_weather
 
 # Напишем собственную функцию main где город можно вводить через input
 
@@ -23,5 +23,5 @@ def main():
     input("Нажмите Enter для уведомления")
     notify_weather(message)
 
-
-main()
+if __name__ == '__main__':
+    main()
