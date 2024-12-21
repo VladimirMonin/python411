@@ -97,3 +97,25 @@ def write_to_file(file_name: str, *data: str, mode: str = "a", encoding: str = "
 data - коллеция строк, которые нужно записать в файл
 Пишите это в цикле for line in data:
 """
+
+
+def write_to_file(file_name: str, *data: str, 
+                  mode: str = "a", encoding: str = "utf-8") -> None:
+    """
+    Записывает данные в txt файл либо в режиме дозаписи, либо в режиме перезаписи
+
+    :param file_name: str - название файла
+    :param data: str - данные для записи
+    :param mode: str - режим работы с файлом
+    :param encoding: str - кодировка файла
+    :return: None
+    """
+    
+    with open(file_name, mode, encoding=encoding) as file:
+        for line in data:
+            file.write(line + "\n")
+
+
+data = ["Шёл Никифор", "через реку", "видит в реке рак"]
+
+write_to_file("lesson_14.txt", *data)
