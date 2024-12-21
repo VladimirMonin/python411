@@ -59,3 +59,25 @@ def get_weather(
     url = rf"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units={units}&lang={language}"
     response = requests.get(url)
     return response.json()
+
+
+
+
+def format_weather_message(weather_dict: dict) -> str:
+    """
+    Функция форматирования сообщения о погоде. Возвращает строку с информацией о погоде.
+
+    Arguments:
+        weather_dict -- словарь с данными о погоде (ответ погодного API)
+
+    Returns:
+       Строка с информацией о погоде формата 'Температура: {temp}°C\nОщущается как: {feels_like}°C\nОписание: {description}'
+    """
+
+    temp = weather_dict["main"]["temp"]
+    feels_like = weather_dict["main"]["feels_like"]
+    description = weather_dict["weather"][0]["description"]
+
+    return (
+        f"Температура: {temp}°C\nОщущается как: {feels_like}°C\nОписание: {description}"
+    )
