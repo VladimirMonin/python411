@@ -298,3 +298,35 @@ with open("students.html", "w", encoding="utf-8") as file:
     file.write(html_template)
 
 
+# pip install pyYAML
+
+
+import yaml
+
+# Простой конфиг с базовыми настройками
+config = {
+    'app_name': 'Мое приложение',
+    'version': '1.0',
+    'admin': 'Василий Уткин',
+    'settings': {
+        'theme': 'dark',
+        'language': 'ru',
+        'notifications': True
+    },
+    'users': [
+        'admin',
+        'moderator',
+        'guest'
+    ]
+}
+
+# Записываем в YAML
+with open('simple_config.yaml', 'w', encoding='utf-8') as file:
+    yaml.dump(config, file, default_flow_style=False, allow_unicode=True)
+
+# Читаем из YAML
+with open('simple_config.yaml', 'r', encoding='utf-8') as file:
+    loaded_config = yaml.safe_load(file)
+
+print("Наш загруженный конфиг:")
+print(loaded_config)
