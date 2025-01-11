@@ -7,7 +7,21 @@ Lesson 17
 - Защищенные атрибуты
 - Защищенные методы
 - Доступ из вне
+
+Делаем 2 метода, которые называются одинаково
+Например это salary
+
+@property
+def salary  - это для добычи данных из приватных атрибутов
+
+@salary.setter - мы делаем сеттер для конкретного атрибута
 """
+
+class SalaryException(ValueError):
+    """
+    Ошибка связанна с измененим в ЗП
+    """
+    pass
 
 class Employee:
     def __init__(self, name:str, age: int, salary:int, threshold_percent_salary: int = 50) -> None:
@@ -16,10 +30,12 @@ class Employee:
         self.__salary = salary
         self.__threshold_percent_salary: int = 50
 
-    def get_salary(self) -> int:
+    @property
+    def salary(self) -> int:
         return self.__salary
     
-    def set_salary(self, value: int) -> None:
+    @salary.setter
+    def salary(self, value: int) -> None:
         if not isinstance(value, int):
             raise TypeError("Зарплата должна быть числом")
         if value < 0:
@@ -32,6 +48,7 @@ class Employee:
         
 
 manager = Employee("Владимир", 30, 100000)
-print(manager.get_salary())
-manager.set_salary("пирожок")
-print(manager.get_salary())
+print(manager.salary)
+
+manager.salary = 140000
+print(manager.salary)
