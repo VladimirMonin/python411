@@ -5,28 +5,58 @@ Lesson 17
 """
 
 class Car:
+    """
+    Экспериментальный класс автомобиль 
+    для изучения приватных и защищенных методов и атрибутов
+    """
     def __init__(self, color: str, mark: str, serial_number: int):
         self.color = color
         self.mark = mark
         self.__serial_number = serial_number
+        self.__engine_state: bool = False
 
     def __str__(self):
         return f'Автомобиль {self.mark}.\nСерийный номер {self.__serial_number}'
+    
+    def start_engine(self):
+        self.__engine_state = True
+        self.__make_noise()
+        print(f'Состояние двигателя: {self.__engine_state}')
 
-"""
-Два уровня сокрытия атрибута или метода
-_ - защищенный - условно нет доступа из вне. Есть доступ у наследников
-__ - приватный - сложный доступ из вне. Нет доступа у наследников
-"""
+    def stop_engine(self):
+        self.__engine_state = False
+        print(f'Состояние двигателя: {self.__engine_state}')
 
-car = Car("черный", "Ёмобиль", 777)
-# print(car.__serial_number) # AttributeError: 'Car' object has no attribute '__serial_number'
-print(car.__dict__)
-print(car._Car__serial_number) # 777
+    def __make_noise(self):
+        print(f"Звук работы двигателя {self.mark}")
 
+    def move(self):
+        if self.__engine_state:
+            print("Автомобиль едет")
+            self.__make_noise()
+        else:
+            print("Двигатель не запущен")
 
-car._Car__serial_number = 555
-print(car)
-# car.__serial_number = 222
-print(car.__dict__)
+    def stop(self):
+        print("Автомобиль остановился")
 
+# Создаем экземпляр класса автомобиль
+car = Car("red", "Ёмобиль", 123456)
+
+# Попробуем поехать
+car.move()
+
+# Запустим двигатель
+car.start_engine()
+
+# Поехали
+car.move()
+
+# Останавливаемся
+car.stop()
+
+# Остановим двигатель
+car.stop_engine()
+
+# Пробуем издать звук работы двигателя
+# car.__make_noise() # AttributeError: 'Car' object has no attribute '__make_noise'. Did you mean: '_Car__make_noise'?
