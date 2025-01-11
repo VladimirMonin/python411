@@ -37,12 +37,12 @@ class Employee:
     @salary.setter
     def salary(self, value: int) -> None:
         if not isinstance(value, int):
-            raise TypeError("Зарплата должна быть числом")
+            raise SalaryException("Зарплата должна быть числом")
         if value < 0:
-            raise ValueError("Зарплата не может быть меньше 0")
+            raise SalaryException("Зарплата не может быть меньше 0")
         # Проверим чтобы зарплата не колебалась более чем на __threshold_percent_salary
         if abs(self.__salary - value) > self.__salary * self.__threshold_percent_salary / 100:
-            raise ValueError(f"Зарплата не может колебаться более чем на {self.__threshold_percent_salary}%")
+            raise SalaryException(f"Зарплата не может колебаться более чем на {self.__threshold_percent_salary}%")
         
         self.__salary = value
         
@@ -50,5 +50,11 @@ class Employee:
 manager = Employee("Владимир", 30, 100000)
 print(manager.salary)
 
-manager.salary = 140000
-print(manager.salary)
+while True:
+    new_salary = int(input("Введите новую зарплату: "))
+    try:
+        manager.salary = new_salary
+    except SalaryException as e:
+        print(e)
+    else:
+        print(f"Зарплата успешно изменена на {manager.salary}")
