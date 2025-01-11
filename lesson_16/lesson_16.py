@@ -4,6 +4,12 @@ Lesson 16
 
 Python: ООП. Ч1. Нейминг. Атрибуты. Методы. Урок: 16
 - Нейминг.
+- Атрибуты класса
+- Инициализатор
+- Self
+- __str__
+- Методы экземпляра
+- Статик методы
 """
 
 """
@@ -23,10 +29,23 @@ class Car:
     
     def __str__(self) -> str:
         return f"Модель: {self.model}\nЦвет: {self.color}\nГод выпуска: {self.year}"
+    
+    def make_beep(self, count:int) -> str:
+        return f"Автомобиль {self.model} сделал {'Бип ' * count}"
+    
+    @staticmethod # Метод который не работает ни с атрибутами экземляра ни с атрибутами класса
+    def get_auto_value(width: int, height: int, depth: int) -> int:
+        return width * height * depth
 
 
 car_1 = Car("BMW", "red", 2020)
 car_2 = Car("Жигули", "blue", 1990)
 
-print(car_1)
-print(car_2)
+auto_list = [car_1, car_2]
+
+for car in auto_list:
+    print(car)
+    print(car.make_beep(3))
+
+print(car_1.make_beep(3))
+print(car_2.make_beep(5))
