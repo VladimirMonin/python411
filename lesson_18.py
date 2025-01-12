@@ -8,10 +8,12 @@ Python: ООП. Ч3. Инкапсуляция. Приватные методы �
 
 import requests
 from plyer import notification
+from requests.exceptions import RequestException
+from json.decoder import JSONDecodeError
 # pip innstall plyer requests
 
 CITY = "Усть-Каменогорск"
-API_KEY = "23496c2a58b99648af590ee8a29c5348"
+API_KEY = "23496c2a58b99648af590ee8a29c5348-аааа"
 UNITS = "metric"
 LANGUAGE = "ru"
 
@@ -24,6 +26,10 @@ LANGUAGE = "ru"
 
 # Получим описание и температуру, и ощущается как
 # weather_dict = response.json()
+
+class WeatherRequestError(Exception):
+    """Кастомное исключение для ошибок погодного API"""
+    pass
 
 class WeatherRequst:
     def __init__(self, api_key: str, units: str = "metric", language: str = "ru"):
@@ -46,10 +52,17 @@ class WeatherRequst:
         Метод формирует URL и делает запрос к погодному API
         :param city: Название города
         :return: None
+        :raises: WeatherRequestError
         """
-        self.__get_request_url(city)
-        response = requests.get(self.__url)
-        self.__response = response.json()
+        try:
+            self.__get_request_url(city)
+            response = requests.get(self.__url, timeout=5)  # добавляем timeout
+            response.raise_for_status()  # проверяем статус ответа
+            self.__response = response.json()
+        except RequestException as e:
+            raise WeatherRequestError(f"Ошибка при запросе погоды: {str(e)}")
+        except JSONDecodeError:
+            raise WeatherRequestError("Получен некорректный ответ от сервера")
 
     def get_clear_weather_data(self, city: str):
         """
