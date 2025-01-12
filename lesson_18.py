@@ -98,10 +98,26 @@ class WeatherRequst:
         return self.get_weather_string(weather_dict)
 
 
-weather = WeatherRequst(API_KEY)
-result = weather("Бангкок")
-print(result)
+# weather = WeatherRequst(API_KEY)
+# result = weather("Бангкок")
+# print(result)
         
+
+class Notification:
+
+    @staticmethod
+    def send_notification(title: str, message: str):
+        notification.notify(
+            title=title,
+            message=message,
+            app_name="Погода",
+            app_icon=None,
+            timeout=10,
+            toast=True,
+        )
+
+    def __call__(self, title: str, message: str):
+        self.send_notification(title, message)
 
 
 
