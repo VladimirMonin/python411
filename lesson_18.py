@@ -13,7 +13,7 @@ from json.decoder import JSONDecodeError
 # pip innstall plyer requests
 
 CITY = "Усть-Каменогорск"
-API_KEY = "23496c2a58b99648af590ee8a29c5348-аааа"
+API_KEY = "23496c2a58b99648af590ee8a29c5348"
 UNITS = "metric"
 LANGUAGE = "ru"
 
@@ -120,24 +120,20 @@ class Notification:
         self.send_notification(title, message)
 
 
+class WeatherFacade:
+    def __init__(self, api_key: str, units: str = "metric", language: str = "ru"):
+        self.weather = WeatherRequst(api_key, units, language)
+        self.notification = Notification()
+
+    def __call__(self, city: str):
+        weather_dict = self.weather.get_clear_weather_data(city)
+        title = f"Погода в {city}"
+        message = self.weather.get_weather_string(weather_dict)
+        self.notification(title, message)
 
 
-# # Temp
-# temp = weather_dict['main']['temp']
-# # Ощущается как
-# feels_like = weather_dict['main']['feels_like']
-# # Описание погоды
-# description = weather_dict['weather'][0]['description']
-
-# print(f'Температура: {temp}°C\nОщущается как: {feels_like}°C\nОписание: {description}')
-
-# # Уведомление
-# notification.notify(
-#     title=f"Погода в {CITY}",
-#     message=f"Температура: {temp}°C\nОщущается как: {feels_like}°C\nОписание: {description}",
-#     app_name="Погода",
-#     app_icon=None,
-#     timeout=10,
-#     toast=True,
-# )
+if __name__ == '__main__':
+    weather = WeatherFacade(API_KEY)
+    input_city = input("Введите название города: ")
+    weather(input_city)
 
