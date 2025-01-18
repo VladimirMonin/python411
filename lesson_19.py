@@ -22,6 +22,12 @@ class Animal:
 
 
 class Dog(Animal):
+    def __init__(self, name: str, breed: str):
+        # Animal.__init__(self, name)
+        super().__init__(name)
+        self.breed = breed
+        print("Инициализация собаки")
+
     def voice(self):
         # animal_voice = Animal.voice(self)
         animal_voice = super().voice()
@@ -29,13 +35,14 @@ class Dog(Animal):
         return animal_voice
 
 
-dog = Dog("Шарик")
+dog = Dog("Шарик", "Дворняга")
 print(dog)
 print(type(dog))
 
 print(dog.voice())
 
 # Инициализация животного
+# Инициализация собаки
 # Животное по имени Шарик
 # <class '__main__.Dog'>
 # Животное издает звук Гав
