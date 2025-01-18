@@ -7,42 +7,49 @@ Lesson 19
 - __str__ - метод, который возвращает строку с описанием объекта
 - Переопределение метода voice в наследнике
 - Проверка доступа защищенных и приватных атрибутов в наследнике (защищенные доступны, приватные нет)
+- super и запуск инициализатора родителя
+- Отвлеклись на Дебаггер
+- ABC - abstract base class - базовый абстрактный класс, который может иметь абстрактные методы
+- @abstractmethod - обязывает наследников реализовать метод с этим названием (совпадение только по имени метода)
 """
 
-class Animal:
-    def __init__(self, name: str):
-        self._name = name
-        print("Инициализация животного")
+from abc import ABC, abstractmethod
+
+
+class AbstractDocument(ABC):
+    def __init__(self, file_path: str) -> None:
+        self.file_path = file_path
     
-    def voice(self):
-        return "Животное издает звук"
+    @abstractmethod
+    def open(self):
+        pass
 
-    def __str__(self):
-        return f"Животное по имени {self._name}"
+    @abstractmethod
+    def read(self):
+        pass
 
-
-class Dog(Animal):
-    def __init__(self, name: str, breed: str):
-        # Animal.__init__(self, name)
-        super().__init__(name)
-        self.breed = breed
-        print("Инициализация собаки")
-
-    def voice(self):
-        # animal_voice = Animal.voice(self)
-        animal_voice = super().voice()
-        animal_voice += " Гав"
-        return animal_voice
+    @abstractmethod
+    def append(self):
+        pass
+    
+    @abstractmethod
+    def write(self):
+        pass
 
 
-dog = Dog("Шарик", "Дворняга")
-print(dog)
-print(type(dog))
+class MarkdownDocument(AbstractDocument):
+    def __init__(self, file_path: str) -> None:
+        super().__init__(file_path)
 
-print(dog.voice())
+    def open(self):
+        pass
+    def read(self):
+        pass
+    def append(self):
+        pass
+    def write(self):
+        pass
 
-# Инициализация животного
-# Инициализация собаки
-# Животное по имени Шарик
-# <class '__main__.Dog'>
-# Животное издает звук Гав
+
+md_file = MarkdownDocument("file.md")
+# TypeError: Can't instantiate abstract class MarkdownDocument without an implementation for abstract methods 'append', 'open', 'read', 'write'
