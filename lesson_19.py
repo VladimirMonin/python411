@@ -15,7 +15,7 @@ class Animal:
         print("Инициализация животного")
     
     def voice(self):
-        print("Животное издает звук")
+        return "Животное издает звук"
 
     def __str__(self):
         return f"Животное по имени {self._name}"
@@ -23,16 +23,19 @@ class Animal:
 
 class Dog(Animal):
     def voice(self):
-        print(f"{self._name} лает")
+        # animal_voice = Animal.voice(self)
+        animal_voice = super().voice()
+        animal_voice += " Гав"
+        return animal_voice
 
 
 dog = Dog("Шарик")
 print(dog)
 print(type(dog))
 
-dog.voice()
+print(dog.voice())
 
 # Инициализация животного
 # Животное по имени Шарик
 # <class '__main__.Dog'>
-# Шарик лает
+# Животное издает звук Гав
