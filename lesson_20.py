@@ -15,32 +15,32 @@
 
 
 class A:
-    def __init__(self):
-        print("Инициализатор класса A")
+    def __init__(self, attr_a) -> None:
+        print("Инициализация класса A")
+        self.attr_a = attr_a
 
     def method_a(self):
-        print("Метод А")
+        print(f"Method A: {self.attr_a} ")
 
 
 class B:
-    def __init__(self):
-        print("Инициализатор класса B")
+    def __init__(self, attr_b) -> None:
+        print("Инициализация класса B")
+        self.attr_b = attr_b
 
-    def method_a(self):
-        print("Метод A в классе B")
-
-
-class C(B, A):
-    pass
+    def method_b(self):
+        print(f"Method B: {self.attr_b}")
 
 
-c = C()
-c.method_a()
-# Какой метод будет вызван?
-# Ответ: метод из класса B
-# mro() - как пайтон будет искать методы?
+class C(A, B):
+    def __init__(self, attr_a, attr_b, attr_c) -> None:
+        A.__init__(self, attr_a)
+        B.__init__(self, attr_b)
+        print("Инициализация класса C")
+        self.attr_c = attr_c
 
-print(C.mro())
-# [<class '__main__.C'>, <class '__main__.B'>, <class '__main__.A'>, <class 'object'>]
+    def method_c(self):
+        print(f"Method C: {self.attr_c}")
 
 
+c = C(1, 2, 3)
