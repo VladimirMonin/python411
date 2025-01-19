@@ -12,34 +12,17 @@
 # Много минусов. Потому что сложно отследить типы данных, сами данные и т.п.
 
 class A:
-    def __init__(self, **kwargs):
-        print("Инициализация класса A")
-        self.attr_a = kwargs.get('attr_a')
-    
     def method_a(self):
-        print("Метод A")
+        print("Метод А")
 
-class B(A):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        print("Инициализация класса B")
-        self.attr_b = kwargs.get('attr_b')
-    
-    def method_b(self):
-        print("Метод B")
+class B:
+    def method_a(self):
+        print("Метод A в классе B")
 
-class C(B):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        print("Инициализация класса C")
-        self.attr_c = kwargs.get('attr_c')
-    
-    def method_c(self):
-        print("Метод C")
+class C(A, B):
+    pass
 
-# Создание экземпляра с передачей всех атрибутов через kwargs
-c = C(attr_a="A", attr_b="B", attr_c="C")
 
+c = C()
 c.method_a()
-c.method_b()
-c.method_c()
+# Какой метод будет вызван?
