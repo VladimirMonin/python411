@@ -8,21 +8,33 @@
 # Цепочка наследования A - B - C
 
 class A:
-    def __init__(self):
+    def __init__(self, attr_a:str):
         print("Инициализация класса A")
-    pass
+        self.attr_a = attr_a
+    
+    def method_a(self):
+        print("Метод A")
 
 class B(A):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, attr_a:str, attr_b:str):
+        super().__init__(attr_a)
         print("Инициализация класса B")
-    pass
+        self.attr_b = attr_b
+    
+    def method_b(self):
+        print("Метод B")
 
 class C(B):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,  attr_a:str, attr_b:str, attr_c: str):
+        super().__init__(attr_a, attr_b)
         print("Инициализация класса C")
-    pass
+        self.attr_c = attr_c
+    
+    def method_c(self):
+        print("Метод C")
 
 
-c = C()
+c = C("A", "B", "C")
+c.method_a()
+c.method_b()
+c.method_c()
