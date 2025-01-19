@@ -1,6 +1,8 @@
 """
 19.01.2025
 Тема: ООП Ч5. Наследование. Множественное. Иерархическое. MRO. Урок: 20
+- Взаимозависимость классов
+- Вызов метода наследника через родителя
 """
 
 from abc import ABC, abstractmethod
@@ -9,6 +11,7 @@ from abc import ABC, abstractmethod
 class AbstractDocument(ABC):
     def __init__(self, file_path: str) -> None:
         self.file_path = file_path
+        self.file = self.open()
     
     @abstractmethod
     def open(self):
@@ -28,6 +31,24 @@ class AbstractDocument(ABC):
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__} - {self.file_path}"
+    
+
+class TxtDocument(AbstractDocument):
+    def __init__(self, file_path: str) -> None:
+        super().__init__(file_path)
+
+    def open(self):
+        with open(self.file_path, "r", encoding="utf-8") as file:
+            return file.read()
+        
+    def read(self):
+        pass
+
+    def append(self):
+        pass
+
+    def write(self):
+        pass
 
 
 class MarkdownDocument(AbstractDocument):
@@ -67,3 +88,8 @@ print(pdf_file)
 
 # MarkdownDocument - file.md
 # PdfDocument - file.pdf
+
+
+file ="lesson_14.txt"
+txt_file = TxtDocument(file)
+print(txt_file.file)
