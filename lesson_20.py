@@ -10,52 +10,63 @@
 - Mixin - 
 """
 
-# Создаём миксины для различных способностей животных
 class SwimMixin:
+    def __init__(self, swim_speed=10, *args, **kwargs):
+        self.swim_speed = swim_speed
+        super().__init__(*args, **kwargs)
+    
     def swim(self):
-        return f"{self.__class__.__name__}по имени {self.name} плавает в воде"
+        return f"{self.__class__.__name__} плавает со скоростью {self.swim_speed} км/ч"
 
 class FlyMixin:
+    def __init__(self, max_altitude=100, *args, **kwargs):
+        self.max_altitude = max_altitude
+        super().__init__(*args, **kwargs)
+    
     def fly(self):
-        return f"{self.__class__.__name__}по имени {self.name} летит по небу"
+        return f"{self.__class__.__name__} летит на высоте {self.max_altitude} метров"
 
 class RunMixin:
+    def __init__(self, run_speed=20, *args, **kwargs):
+        self.run_speed = run_speed
+        super().__init__(*args, **kwargs)
+    
     def run(self):
-        return f"{self.__class__.__name__}по имени {self.name} бежит по земле"
+        return f"{self.__class__.__name__} бежит со скоростью {self.run_speed} км/ч"
 
-# Базовый класс животного
 class Animal:
-    def __init__(self, name):
+    def __init__(self, name, age, *args, **kwargs):
         self.name = name
+        self.age = age
+        super().__init__(*args, **kwargs)
 
     def eat(self):
         return f"{self.name} кушает"
 
-# Теперь создаём конкретных животных с нужными способностями
 class Duck(Animal, SwimMixin, FlyMixin):
+    def __init__(self, name, age, swim_speed=8, max_altitude=50):
+        super().__init__(name=name, age=age, swim_speed=swim_speed, max_altitude=max_altitude)
+
     def make_sound(self):
         return "Кря-кря!"
 
-class Cat(Animal, RunMixin):
-    def make_sound(self):
-        return "Мяу!"
-
 class Penguin(Animal, SwimMixin, RunMixin):
+    def __init__(self, name, age, swim_speed=15, run_speed=10):
+        super().__init__(name=name, age=age, swim_speed=swim_speed, run_speed=run_speed)
+
     def make_sound(self):
-        return "Курлык!"
-
-class SwimingCat(Animal, SwimMixin, RunMixin):
-    def make_sound(self):
-        return "Мяу-мяу!"
+        return "Ква-ква!"
 
 
-# Создаём животных
-donald = Duck(name="Дональд")
-murzik = Cat(name="Мурзик")
-rico = Penguin(name="Рико")
+# Создаём животных с атрибутами
+print(Duck.mro()) # [<class '__main__.Duck'>, <class '__main__.Animal'>, <class '__main__.SwimMixin'>, <class '__main__.FlyMixin'>, <class 'object'>]
+donald = Duck(name="Дональд", age=5, swim_speed=12, max_altitude=60)
+rico = Penguin(name="Рико", age=3, swim_speed=20, run_speed=15)
 
-# Проверяем их способности
-print(donald.swim())  # Выведет: Duck плавает в воде
-print(donald.fly())   # Выведет: Duck летит по небу
-print(murzik.run())   # Выведет: Cat бежит по земле
-print(rico.swim())    # Выведет: Penguin плавает в воде
+# Проверяем атрибуты и методы
+print(donald.swim())  # Дональд плавает со скоростью 12 км/ч
+print(donald.name, donald.age)  # Дональд 5
+print(donald.max_altitude)  # 60
+
+print(rico.swim())  # Рико плавает со скоростью 20 км/ч
+print(rico.run())   # Рико бежит со скоростью 15 км/ч
