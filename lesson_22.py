@@ -34,12 +34,35 @@ class MusicComposition:
         self.year = year
         self.duration = duration
 
+    def __str__(self):
+        return (
+            f"Название: {self.name}\n"
+            f"Автор: {self.author}\n"
+            f"Год выпуска: {self.year}\n"
+            f"Продолжительность: {self.duration}"
+        )
+
 
 class PlayList:
     def __init__(self, name):
         self.name = name
         self.tracks: list[MusicComposition] = []
 
+    def __len__(self):
+        return len(self.tracks)
+    
+    def __str__(self):
+        return f"Название плейлиста: {self.name}\n" f"Количество треков: {len(self)}"
+    
+    def __iadd__(self, other: MusicComposition) -> "PlayList":
+        if not isinstance(other, MusicComposition):
+            raise TypeError("Неверный тип данных")
+        self.tracks.append(other)
+        return self
+    
+    def __add__(self, other: MusicComposition) -> "PlayList":
+        return self.__iadd__(other)
+    
 
 
 composition1 = MusicComposition(
@@ -49,8 +72,17 @@ composition1 = MusicComposition(
     duration=390
 )
 
+# Создание экземпляра для песни "Nothing Else Matters" (Apocalyptica)
+composition2 = MusicComposition(
+    name="Nothing Else Matters",
+    author="James Hetfield, Lars Ulrich (исполнение Apocalyptica)",
+    year=1996,
+    duration=390  # Длительность в секундах (6 минут 30 секунд)
+)
+
 playlist = PlayList(name="Best of Metallica")
 
-# Это не работает - нет описания логики сложения и инплейс сложения
-# playlist + composition1
-# playlist += composition1
+playlist += composition1
+playlist = playlist + composition2
+
+print(playlist)
