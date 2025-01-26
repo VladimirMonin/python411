@@ -25,6 +25,9 @@
 - __imul__ - *=
 - __itruediv__ - /=
 - __ifloordiv__ - //=
+
+- __str__ - строковое представление объекта
+- __repr__ - строковое представление объекта для разработчика
 """
 
 class MusicComposition:
@@ -41,6 +44,9 @@ class MusicComposition:
             f"Год выпуска: {self.year}\n"
             f"Продолжительность: {self.duration}"
         )
+    
+    def __repr__(self):
+        return f"MusicComposition(name='{self.name}', author='{self.author}', year='{self.year}', duration='{self.duration}')"
 
 
 class PlayList:
@@ -86,3 +92,13 @@ playlist += composition1
 playlist = playlist + composition2
 
 print(playlist)
+
+compositions = [composition1, composition2]
+print(compositions)
+print(compositions[0])
+
+# Получим строковое представление объекта из repr
+rep = repr(composition1) # MusicComposition(name=Nothing Else Matters, author=James Hetfield, Lars Ulrich, year=1991, duration=390)
+
+obj = eval(rep)    # Выполнит строку как python код
+
