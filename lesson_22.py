@@ -28,6 +28,22 @@
 
 - __str__ - строковое представление объекта
 - __repr__ - строковое представление объекта для разработчика
+
+
+СРАВНЕНИЕ НА БОЛЬШЕ МЕНЬШЕ
+- less then - __lt__ - меньше чем <
+- great then - __gt__ - больше чем >
+- less or equal - __le__ - меньше или равно <=
+- great or equal - __ge__ - больше или равно >=
+- equal - __eq__ - равно ==
+- not equal - __ne__ - не равно !=
+
+
+Достаточно 2 магических метода чтобы Python просчитал остальные
+eq - равенство
+lt - меньше чем
+
+from functools import total_ordering
 """
 
 class MusicComposition:
@@ -47,6 +63,25 @@ class MusicComposition:
     
     def __repr__(self):
         return f"MusicComposition(name='{self.name}', author='{self.author}', year='{self.year}', duration='{self.duration}')"
+    
+    def __eq__(self, other: 'MusicComposition'):
+        if not isinstance(other, MusicComposition):
+            raise TypeError("Неверный тип данных")
+        
+        return (
+             self.duration == other.duration
+        )
+    
+    def __lt__(self, other: "MusicComposition"):
+        if not isinstance(other, MusicComposition):
+            raise TypeError("Неверный тип данных")
+
+        return self.duration < other.duration
+    
+    def __le__(self, other: "MusicComposition"):
+        if not isinstance(other, MusicComposition):
+            raise TypeError("Неверный тип данных")
+        return self.duration <= other.duration
 
 
 class PlayList:
@@ -102,3 +137,12 @@ rep = repr(composition1) # MusicComposition(name=Nothing Else Matters, author=Ja
 
 obj = eval(rep)    # Выполнит строку как python код
 
+# Теперь мы можем сравнивать композиции между собой
+# По нашей логике сравнение будет идти на основе длительности
+
+print(composition1 == composition2)
+print(composition1 != composition2)
+print(composition1 < composition2)
+print(composition1 > composition2)
+print(composition1 <= composition2)
+print(composition1 >= composition2)
