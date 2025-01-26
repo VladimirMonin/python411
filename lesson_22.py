@@ -146,3 +146,26 @@ print(composition1 < composition2)
 print(composition1 > composition2)
 print(composition1 <= composition2)
 print(composition1 >= composition2)
+
+
+# ДАТАКЛАССЫ
+
+from dataclasses import dataclass
+
+@dataclass
+class MusicCompositionData:
+    name: str
+    author: str
+    year: int
+    duration: int
+
+
+m_data = MusicCompositionData(
+    name="Nothing Else Matters",
+    author="James Hetfield, Lars Ulrich",
+    year=1991,
+    duration=390,
+)
+
+print(m_data)
+# MusicCompositionData(name='Nothing Else Matters', author='James Hetfield, Lars Ulrich', year=1991, duration=390)
