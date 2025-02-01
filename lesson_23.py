@@ -126,17 +126,47 @@ class Employee:
         return self.hourly_rate * sum(self.worked_hours)
 
 
-direcotor = Employee("Bob", 60, "Director", 100)
+# direcotor = Employee("Bob", 60, "Director", 100)
 
-worker = Employee("Alice", 30, "Worker", 20)
+# worker = Employee("Alice", 30, "Worker", 20)
 
-# Добавим Alice часы
-worker.worked_hours.append(8)
-worker.worked_hours.append(8)
-worker.worked_hours.append(8)
+# # Добавим Alice часы
+# worker.worked_hours.append(8)
+# worker.worked_hours.append(8)
+# worker.worked_hours.append(8)
 
-print(worker.worked_hours)
-print(direcotor.worked_hours)
-# Проверим зарплаты
-print(worker.get_salary())
-print(direcotor.get_salary())
+# print(worker.worked_hours)
+# print(direcotor.worked_hours)
+# # Проверим зарплаты
+# print(worker.get_salary())
+# print(direcotor.get_salary())
+
+
+
+@dataclass
+class Song:
+    name: str
+    duration: int
+    # init=False - не будет создаваться при создании экземпляра
+    duration_str: str = field(init=False, repr=False)
+    
+    # Второй инициализатор - отработает после первого автоматом
+    # Первый создается автоматом
+    def __post_init__(self):
+        minutes = self.duration // 60
+        seconds = self.duration % 60
+        self.duration_str = f"Продолжительность трека {minutes}:{seconds:02d}"
+
+    def __str__(self):
+        return f'{self.name} - {self.duration_str}'
+
+song = Song("Группа крови", 290)
+print(song.duration_str)  # Выведет "4:50"
+
+# Получим repr
+repr_song = repr(song) # Song(name='Группа крови', duration=290)
+print(repr_song)
+
+# Получим обратно песню
+restored_song = eval(repr_song) # запускает строку как пайтон код - создает экземпляр обратно
+print(restored_song)
