@@ -46,91 +46,42 @@ lt - меньше чем
 from functools import total_ordering
 """
 
-class MusicComposition:
-    def __init__(self, name:str, author:str, year:int, duration:int):
-        self.name = name
-        self.author = author
-        self.year = year
-        self.duration = duration
+# ДАТАКЛАССЫ
 
-    def __str__(self):
-        return (
-            f"Название: {self.name}\n"
-            f"Автор: {self.author}\n"
-            f"Год выпуска: {self.year}\n"
-            f"Продолжительность: {self.duration}"
-        )
-    
-    def __repr__(self):
-        return f"MusicComposition(name='{self.name}', author='{self.author}', year='{self.year}', duration='{self.duration}')"
-    
-    # def __eq__(self, other: 'MusicComposition'):
-    #     if not isinstance(other, MusicComposition):
-    #         raise TypeError("Неверный тип данных")
-        
-    #     return (
-    #          self.duration == other.duration
-    #     )
-    
-    # def __lt__(self, other: "MusicComposition"):
-    #     if not isinstance(other, MusicComposition):
-    #         raise TypeError("Неверный тип данных")
+from dataclasses import dataclass, field
 
-    #     return self.duration < other.duration
-    
-    # def __le__(self, other: "MusicComposition"):
-    #     if not isinstance(other, MusicComposition):
-    #         raise TypeError("Неверный тип данных")
-    #     return self.duration <= other.duration
+@dataclass(order=True)
+class MusicCompositionData:
+    name: str = field(compare=False)
+    author: str = field(compare=False)
+    year: int = field(compare=False)
+    duration: int
 
 
-class PlayList:
-    def __init__(self, name):
-        self.name = name
-        self.tracks: list[MusicComposition] = []
-
-    def __len__(self):
-        return len(self.tracks)
-    
-    def __str__(self):
-        return f"Название плейлиста: {self.name}\n" f"Количество треков: {len(self)}"
-    
-    def __iadd__(self, other: MusicComposition) -> "PlayList":
-        if not isinstance(other, MusicComposition):
-            raise TypeError("Неверный тип данных")
-        self.tracks.append(other)
-        return self
-    
-    def __add__(self, other: MusicComposition) -> "PlayList":
-        return self.__iadd__(other)
-    
-
-
-composition1 = MusicComposition(
+composition1 = MusicCompositionData(
     name="Nothing Else Matters",
     author="James Hetfield, Lars Ulrich",
     year=1991,
-    duration=290
+    duration=290,
 )
 
 # Создание экземпляра для песни "Nothing Else Matters" (Apocalyptica)
-composition2 = MusicComposition(
+composition2 = MusicCompositionData(
     name="Nothing Else Matters",
     author="James Hetfield, Lars Ulrich (исполнение Apocalyptica)",
     year=1996,
-    duration=490  # Длительность в секундах (6 минут 30 секунд)
+    duration=490,  # Длительность в секундах (6 минут 30 секунд)
 )
 
+# Распечатаем
+print(composition1)
+# Repr распечатаем
+print(repr(composition1))
+# MusicCompositionData(name='Nothing Else Matters', author='James Hetfield, Lars Ulrich', year=1991, duration=290)
+
+print(composition1 == composition2)
+print(composition1 < composition2)
+
+
 compositions_list = [composition1, composition2]
-
-def key_duration(composition: MusicComposition):
-    return composition.duration
-
-
-# Попробуем сортировку
-compositions_list.sort(reverse=True, key=key_duration)
-print(compositions_list)
-
-
-
 
