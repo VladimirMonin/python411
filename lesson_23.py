@@ -59,31 +59,37 @@ class MusicCompositionData:
 
 
 composition1 = MusicCompositionData(
-    name="Nothing Else Matters",
-    author="James Hetfield, Lars Ulrich",
-    year=1991,
-    duration=290,
+    name="Последний Герой",
+    author="Виктор Цой",
+    year=1987,
+    duration=390,
 )
 
 # Создание экземпляра для песни "Nothing Else Matters" (Apocalyptica)
 composition2 = MusicCompositionData(
-    name="Nothing Else Matters",
-    author="James Hetfield, Lars Ulrich (исполнение Apocalyptica)",
-    year=1996,
-    duration=490,  # Длительность в секундах (6 минут 30 секунд)
+name="Группа Крови",
+author="Кино",
+year=1982,
+duration=290,
 )
 
-# Распечатаем
-print(composition1)
-# Repr распечатаем
-print(repr(composition1))
-# MusicCompositionData(name='Nothing Else Matters', author='James Hetfield, Lars Ulrich', year=1991, duration=290)
+# Создание экземпляра для песни "Nothing Else Matters" (Apocalyptica)
+composition3 = MusicCompositionData(
+    name="Elevation",
+    author="U2",
+    year=1991,
+    duration=270,
+)
 
-print(composition1 == composition2)
-print(composition1 < composition2)
+music_list = [composition1, composition2, composition3]
+
+music_list.sort()
+print(music_list)
+print(f'{"*"*20}')
+music_list.sort(reverse=True)
+print(music_list)
 
 
-compositions_list = [composition1, composition2]
 
 #PRACTICE 
 """
