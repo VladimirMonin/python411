@@ -85,3 +85,11 @@ print(composition1 < composition2)
 
 compositions_list = [composition1, composition2]
 
+#PRACTICE 
+"""
+Сделайте 3 экземпляра датакласса MusicCompositionData
+Поместите их в список
+Попробуйте сравнить на больше меньше 2 из них
+Попробуйте применить к списку .sort() c reverse=True и без него
+
+"""
