@@ -50,6 +50,7 @@ from functools import total_ordering
 
 from dataclasses import dataclass, field
 
+
 @dataclass(order=True)
 class MusicCompositionData:
     name: str = field(compare=False)
@@ -67,10 +68,10 @@ composition1 = MusicCompositionData(
 
 # Создание экземпляра для песни "Nothing Else Matters" (Apocalyptica)
 composition2 = MusicCompositionData(
-name="Группа Крови",
-author="Кино",
-year=1982,
-duration=290,
+    name="Группа Крови",
+    author="Кино",
+    year=1982,
+    duration=290,
 )
 
 # Создание экземпляра для песни "Nothing Else Matters" (Apocalyptica)
@@ -90,8 +91,7 @@ music_list.sort(reverse=True)
 print(music_list)
 
 
-
-#PRACTICE 
+# PRACTICE
 """
 Сделайте 3 экземпляра датакласса MusicCompositionData
 Поместите их в список
@@ -99,3 +99,44 @@ print(music_list)
 Попробуйте применить к списку .sort() c reverse=True и без него
 
 """
+
+
+# Dataclass city
+
+
+@dataclass
+class City:
+    name: str
+    population: int
+    is_used: bool = field(default=False)
+
+
+##### Проверка проблемы общих коллекций
+
+
+@dataclass
+class Employee:
+    name: str
+    age: int
+    position: str
+    hourly_rate: float
+    worked_hours: list = field(default_factory=list)
+
+    def get_salary(self):
+        return self.hourly_rate * sum(self.worked_hours)
+
+
+direcotor = Employee("Bob", 60, "Director", 100)
+
+worker = Employee("Alice", 30, "Worker", 20)
+
+# Добавим Alice часы
+worker.worked_hours.append(8)
+worker.worked_hours.append(8)
+worker.worked_hours.append(8)
+
+print(worker.worked_hours)
+print(direcotor.worked_hours)
+# Проверим зарплаты
+print(worker.get_salary())
+print(direcotor.get_salary())
