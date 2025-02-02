@@ -40,8 +40,26 @@ result_list_3= [film for film in simple_list if 'чел' in film.lower()]
 # Принемает 2 аргумента: функцию и итерируемый объект.
 # Функция должна вернуть булево
 
+# Мы можем определить ссылку на функцию. При этом функция без ВЫЗОВА!
+banana = print
+banana("Привет!")
+
+
 def search_string(string):
     return "чел" in string.lower()
+
+def my_filter(func, iterable):
+    result = []
+
+    for item in iterable:
+        if func(item):
+            result.append(item)
+
+    return result
+
+result_list_3 = my_filter(search_string, simple_list)
+
+
 
 result_list_3 = list(filter(search_string, simple_list))
 
