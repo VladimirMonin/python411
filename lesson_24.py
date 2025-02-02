@@ -2,10 +2,13 @@
 Тема: Функции. Анонимные функции. Map Filter Sorted. Урок: 24
 - синтаксис анонимных функций
 """
+
 from marvel import small_dict, full_dict, simple_set
+
 
 def foo_0(x):
     return x + 10
+
 
 foo = lambda x: x + 10
 
@@ -29,11 +32,11 @@ new_simple_list = [film for film in simple_list]
 result_list_3 = []
 
 for film in simple_list:
-    if 'чел' in film.lower():
+    if "чел" in film.lower():
         result_list_3.append(film)
 
 # list comprehension
-result_list_3= [film for film in simple_list if 'чел' in film.lower()]
+result_list_3 = [film for film in simple_list if "чел" in film.lower()]
 
 # filter - функция высшего порядка.
 # Высшего порядка - значит она принемает в себя другую функцию.
@@ -48,6 +51,7 @@ banana("Привет!")
 def search_string(string):
     return "чел" in string.lower()
 
+
 def my_filter(func, iterable):
     result = []
 
@@ -57,8 +61,8 @@ def my_filter(func, iterable):
 
     return result
 
-result_list_3 = my_filter(search_string, simple_list)
 
+result_list_3 = my_filter(search_string, simple_list)
 
 
 result_list_3 = list(filter(search_string, simple_list))
@@ -74,11 +78,11 @@ print(result_list_3)
 result_list_4 = []
 
 for film in simple_list:
-    result_list_4.append(film.replace(' ', '_').lower())
+    result_list_4.append(film.replace(" ", "_").lower())
 
-result_list_4 = [film.replace(' ', '_').lower() for film in simple_list]
+result_list_4 = [film.replace(" ", "_").lower() for film in simple_list]
 
-result_list_4 = list(map(lambda film: film.replace(' ', '_').lower(), simple_list))
+result_list_4 = list(map(lambda film: film.replace(" ", "_").lower(), simple_list))
 
 print(result_list_4)
 
@@ -87,14 +91,21 @@ print(result_list_4)
 result_list_5 = []
 
 for film in simple_list:
-    if ' ' in film:
-        result_list_5.append(film.replace(' ', '_').lower())
+    if " " in film:
+        result_list_5.append(film.replace(" ", "_").lower())
     else:
         result_list_5.append(film)
 
-result_list_5 = [film.replace(' ', '_').lower() if ' ' in film else film for film in simple_list]
+result_list_5 = [
+    film.replace(" ", "_").lower() if " " in film else film for film in simple_list
+]
 
-result_list_5 = list(map(lambda film: film.replace(' ', '_').lower() if ' ' in film else film, simple_list))
+result_list_5 = list(
+    map(
+        lambda film: film.replace(" ", "_").lower() if " " in film else film,
+        simple_list,
+    )
+)
 
 print(result_list_5)
 
@@ -107,21 +118,65 @@ result_list_6 = []
 
 for film in simple_list:
     if len(film) > 15:
-        if ' ' in film:
-            result_list_6.append(film.replace(' ', '_').lower())
+        if " " in film:
+            result_list_6.append(film.replace(" ", "_").lower())
         else:
             result_list_6.append(film)
 
-result_list_6 = [film.replace(' ', '_').lower() if ' ' in film else film for film in simple_list if len(film) > 15]
+result_list_6 = [
+    film.replace(" ", "_").lower() if " " in film else film
+    for film in simple_list
+    if len(film) > 15
+]
 
-result_list_6 = list(map(lambda film: film.replace(' ', '_').lower() if ' ' in film else film, filter(lambda film: len(film) > 15, simple_list)))
+result_list_6 = list(
+    map(
+        lambda film: film.replace(" ", "_").lower() if " " in film else film,
+        filter(lambda film: len(film) > 15, simple_list),
+    )
+)
 
 print(result_list_6)
 
 
 # Получить список чисел от пользователя
 num_list = map(int, input("Введите числа через пробел: ").split())
-num_list1 = [int(num) for num in input('Введите числа через пробел: ').split()]
+num_list1 = [int(num) for num in input("Введите числа через пробел: ").split()]
 
 # Принт в комприхенш
 [print(n) for n in num_list]
+
+
+######### SORTED
+
+# 7. Перепаковка full_dict с сохранением ключа
+
+full_list = []
+
+for index, film in full_dict.items():
+    full_list.append(
+        {
+            "id": index,
+            **film,
+            # "title": film['title'],
+            # "year":  film['year'],
+            # "director": film['director'],
+            # "screenwriter": film['screenwriter'],
+            # "producer": film['producer'],
+            # "stage": film['stage'],
+        }
+    )
+
+print(full_list)
+
+# Comrihansion
+full_list = [{"id": index, **film} for index, film in full_dict.items()]
+
+# Sorted  - сортируем по алфавиту названия фильмов
+full_list_sorted = sorted(full_list, key=lambda film: film["title"] if film["title"] else "")
+
+
+from pprint import pprint
+
+# Выключим сортировку по умолчанию
+pprint(full_list_sorted, sort_dicts=False)
