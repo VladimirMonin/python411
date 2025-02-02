@@ -66,3 +66,62 @@ result_list_3 = list(filter(search_string, simple_list))
 result_list_3 = list(filter(lambda film: "чел" in film.lower(), simple_list))
 
 print(result_list_3)
+
+######## MAP  ##########
+
+# 4. Обход с помщью map, comprehension коллекций
+
+result_list_4 = []
+
+for film in simple_list:
+    result_list_4.append(film.replace(' ', '_').lower())
+
+result_list_4 = [film.replace(' ', '_').lower() for film in simple_list]
+
+result_list_4 = list(map(lambda film: film.replace(' ', '_').lower(), simple_list))
+
+print(result_list_4)
+
+# 5. Опциональная обработка. Делаем эту работу ЕСЛИ в фильме есть пробел, оставляем как есть если пробела нет
+
+result_list_5 = []
+
+for film in simple_list:
+    if ' ' in film:
+        result_list_5.append(film.replace(' ', '_').lower())
+    else:
+        result_list_5.append(film)
+
+result_list_5 = [film.replace(' ', '_').lower() if ' ' in film else film for film in simple_list]
+
+result_list_5 = list(map(lambda film: film.replace(' ', '_').lower() if ' ' in film else film, simple_list))
+
+print(result_list_5)
+
+
+# 6. КОМБО! Опциональная обработка + фильтрация элементов
+# ФИЛЬТР - строки длиннее 15 символов
+# ОБРАБОКТА - ТАКАЯ ЖЕ
+
+result_list_6 = []
+
+for film in simple_list:
+    if len(film) > 15:
+        if ' ' in film:
+            result_list_6.append(film.replace(' ', '_').lower())
+        else:
+            result_list_6.append(film)
+
+result_list_6 = [film.replace(' ', '_').lower() if ' ' in film else film for film in simple_list if len(film) > 15]
+
+result_list_6 = list(map(lambda film: film.replace(' ', '_').lower() if ' ' in film else film, filter(lambda film: len(film) > 15, simple_list)))
+
+print(result_list_6)
+
+
+# Получить список чисел от пользователя
+num_list = map(int, input("Введите числа через пробел: ").split())
+num_list1 = [int(num) for num in input('Введите числа через пробел: ').split()]
+
+# Принт в комприхенш
+[print(n) for n in num_list]
