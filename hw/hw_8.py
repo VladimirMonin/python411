@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Set
+from typing import List, Dict, Any, Optional
 import json
 from random import choice
 
@@ -15,55 +15,36 @@ class City:
     longitude: float
     is_used: bool = field(default=False, init=False, repr=False)
 
+    def get_first_letter(self) -> str:
+        """Получение первой буквы города в нижнем регистре"""
+        return self.name[0].lower()
+
+    def get_last_letter(self) -> str:
+        """Получение последней буквы города в нижнем регистре"""
+        return self.name[-1].lower()
+
 
 class JsonFile:
     """Класс для работы с JSON файлом"""
     
     def __init__(self, filename: str):
-        """
-        Инициализация класса
-        Args:
-            filename: путь к JSON файлу
-        """
         self.filename = filename
     
     def read_data(self) -> List[Dict[str, Any]]:
-        """
-        Чтение данных из JSON файла
-        Returns:
-            List[Dict]: список словарей с данными о городах
-        """
+        """Чтение данных из JSON файла"""
         with open(self.filename, 'r', encoding='utf-8') as f:
             return json.load(f)
-    
-    def write_data(self, data: List[Dict[str, Any]]) -> None:
-        """
-        Запись данных в JSON файл
-        Args:
-            data: данные для записи
-        """
-        with open(self.filename, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
 
 
 class CitiesSerializer:
     """Класс для сериализации данных о городах"""
     
     def __init__(self, city_data: List[Dict[str, Any]]):
-        """
-        Инициализация класса
-        Args:
-            city_data: список словарей с данными о городах
-        """
         self.cities: List[City] = []
         self._serialize_cities(city_data)
     
     def _serialize_cities(self, city_data: List[Dict[str, Any]]) -> None:
-        """
-        Сериализация данных о городах
-        Args:
-            city_data: список словарей с данными о городах
-        """
+        """Сериализация данных о городах"""
         for city in city_data:
             self.cities.append(
                 City(
@@ -72,16 +53,12 @@ class CitiesSerializer:
                     subject=city['subject'],
                     district=city['district'],
                     latitude=float(city['coords']['lat']),
-                    longitude=float(city['coords']['lon']),
+                    longitude=float(city['coords']['lon'])
                 )
             )
     
     def get_all_cities(self) -> List[City]:
-        """
-        Получение списка всех городов
-        Returns:
-            List[City]: список объектов City
-        """
+        """Получение списка всех городов"""
         return self.cities
 
 
@@ -89,73 +66,48 @@ class CityGame:
     """Класс игровой логики"""
     
     def __init__(self, cities_serializer: CitiesSerializer):
-        """
-        Инициализация класса
-        Args:
-            cities_serializer: экземпляр класса CitiesSerializer
-        """
-        self.cities = cities_serializer.get_all_cities()
-        self.cities_set: Set[str] = {city.name for city in self.cities}
-        #TODO Зачем тут эта история с сетами, если блин у нас ДАТАКЛАСС! Выходит 2 класса просто выкинули (Сериализатор и City)
-        self.used_cities: Set[str] = set()
-        self.computer_city: str = ''
-        self.bad_letters: Set[str] = self._calculate_bad_letters()
-    
-    def _calculate_bad_letters(self) -> Set[str]:
-        """
-        Расчет "плохих" букв
-        Returns:
-            Set[str]: множество "плохих" букв
-        """
-        all_letters = {city.name[-1].lower() for city in self.cities}
-        first_letters = {city.name[0].lower() for city in self.cities}
-        return all_letters - first_letters
-    
-    def start_game(self) -> str:
-        """
-        Начало игры
-        Returns:
-            str: первый город компьютера
-        """
-        #TODO Нафиг нам рандом если мы используем сет
-        self.computer_city = choice(list(self.cities_set))
-        self.cities_set.remove(self.computer_city)
-        self.used_cities.add(self.computer_city)
-        return self.computer_city
-    
-    def human_turn(self, city: str) -> bool:
-        """
-        Ход человека
-        Args:
-            city: название города
-        Returns:
-            bool: True если ход валидный, False если нет
-        """
-        if city not in self.cities_set:
-            return False
-        
-        if self.computer_city and city[0].lower() != self.computer_city[-1].lower():
-            return False
-        
-        self.cities_set.remove(city)
-        self.used_cities.add(city)
+        self.cities: List[City] = cities_serializer.get_all_cities()
+        self.current_computer_city: Optional[City] = None
+        self.bad_letters = self._calculate_bad_letters()
+
+    def _calculate_bad_letters(self) -> set[str]:
+        """Расчет букв, на которые нет городов"""
+        all_last_letters = {city.get_last_letter() for city in self.cities}
+        all_first_letters = {city.get_first_letter() for city in self.cities}
+        return all_last_letters - all_first_letters
+
+    def get_available_cities(self) -> List[City]:
+        """Получение списка доступных городов"""
+        return [city for city in self.cities if not city.is_used]
+
+    def find_city_by_name(self, name: str) -> Optional[City]:
+        """Поиск города по имени"""
+        for city in self.cities:
+            if city.name.lower() == name.lower() and not city.is_used:
+                return city
+        return None
+
+    def start_game(self) -> City:
+        """Начало игры - первый ход компьютера"""
+        available_cities = self.get_available_cities()
+        self.current_computer_city = choice(available_cities)
+        self.current_computer_city.is_used = True
+        return self.current_computer_city
+
+    def validate_human_turn(self, city: City) -> bool:
+        """Проверка хода человека"""
+        if self.current_computer_city:
+            return city.get_first_letter() == self.current_computer_city.get_last_letter()
         return True
-    
-    def computer_turn(self, human_city: str) -> Optional[str]:
-        """
-        Ход компьютера
-        Args:
-            human_city: город, названный человеком
-        Returns:
-            Optional[str]: город компьютера или None если ход невозможен
-        """
-        last_letter = human_city[-1].lower()
-        
-        for city in self.cities_set:
-            if city[0].lower() == last_letter and city[-1].lower() not in self.bad_letters:
-                self.computer_city = city
-                self.cities_set.remove(city)
-                self.used_cities.add(city)
+
+    def make_computer_turn(self, human_city: City) -> Optional[City]:
+        """Ход компьютера"""
+        available_cities = self.get_available_cities()
+        for city in available_cities:
+            if (city.get_first_letter() == human_city.get_last_letter() and 
+                city.get_last_letter() not in self.bad_letters):
+                city.is_used = True
+                self.current_computer_city = city
                 return city
         return None
 
@@ -163,45 +115,45 @@ class CityGame:
 class GameManager:
     """Фасад игры"""
     
-    def __init__(self, json_file: JsonFile, cities_serializer: CitiesSerializer, city_game: CityGame):
-        """
-        Инициализация класса
-        Args:
-            json_file: экземпляр класса JsonFile
-            cities_serializer: экземпляр класса CitiesSerializer
-            city_game: экземпляр класса CityGame
-        """
-        self.json_file = json_file
-        self.cities_serializer = cities_serializer
+    def __init__(self, city_game: CityGame):
         self.city_game = city_game
     
     def __call__(self) -> None:
-        """Запуск игры"""
         self.run_game()
     
     def run_game(self) -> None:
         """Основной игровой цикл"""
         print("Игра 'Города' начинается!")
-        print(f"Компьютер называет город: {self.city_game.start_game()}")
+        computer_city = self.city_game.start_game()
+        print(f"Компьютер называет город: {computer_city.name} "
+              f"({computer_city.subject}, население: {computer_city.population})")
         
         while True:
-            human_city = input("Введите название города: ")
+            human_input = input("Введите название города: ")
+            human_city = self.city_game.find_city_by_name(human_input)
             
-            if not self.city_game.human_turn(human_city):
-                print("Неверный ход! Вы проиграли.")
-                break
-            
-            computer_city = self.city_game.computer_turn(human_city)
-            if not computer_city:
-                print("Компьютер не может найти подходящий город. Вы победили!")
+            if not human_city:
+                print("Такого города нет или он уже использован!")
                 break
                 
-            print(f"Компьютер называет город: {computer_city}")
+            if not self.city_game.validate_human_turn(human_city):
+                print("Город должен начинаться на последнюю букву предыдущего города!")
+                break
+            
+            human_city.is_used = True
+            computer_city = self.city_game.make_computer_turn(human_city)
+            
+            if not computer_city:
+                print(f"Поздравляем! Вы победили! Компьютер не смог найти город на букву '{human_city.get_last_letter()}'")
+                break
+                
+            print(f"Компьютер называет город: {computer_city.name} "
+                  f"({computer_city.subject}, население: {computer_city.population})")
 
 
 if __name__ == "__main__":
     json_file = JsonFile("cities.json")
     cities_serializer = CitiesSerializer(json_file.read_data())
     city_game = CityGame(cities_serializer)
-    game_manager = GameManager(json_file, cities_serializer, city_game)
+    game_manager = GameManager(city_game)
     game_manager()
