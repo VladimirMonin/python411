@@ -5,37 +5,31 @@
 from typing import Callable
 
 
-def fucn(a):
-    # a - хранится тут
-    def inner():
-        # a - используется тут
-        print(a)
-    return inner
+# Функция с кешированием
 
-banan = print
-banan("Привет!")
+def cach_sorter() -> Callable[[list[str]], list[str]]:
+    cach = []
+    last_input = []
+    
+    def sorter(data: list[str]) -> list[str]:
+        nonlocal cach, last_input
+        if data != last_input:
+            print('Делаем сортировку')
+            cach = sorted(data)
+            last_input = data.copy()
+            return cach
+        print("Возвращаем кеш!")
+        return cach
+    
+    return sorter
 
-# Вызов функции 8
-foo = fucn("пирожок")
-foo()
 
-# Функция счетчик - работающая на замыканиях
+sorter_ = cach_sorter()
+shop_list = ["Iphone", "Ipad", "MacBook", "Пирожок"]
 
-def counter(start_value: int) -> Callable[[], int]:
-    def step() -> int:
-        nonlocal start_value
-        start_value += 1
-        return start_value
-    return step
-
-# Создаем пару счетчиков с разным стартовым значением
-
-counter1 = counter(10)
-counter2 = counter(20)
-
-print(counter1())
-print(counter2())
-print(counter1())
-print(counter2())
-print(counter1())
-print(counter2())
+# Тестируем
+print(sorter_(shop_list))
+print(sorter_(shop_list))
+shop_list.append("RTX5090")
+print(sorter_(shop_list))
+print(sorter_(shop_list))
