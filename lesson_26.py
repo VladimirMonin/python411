@@ -74,3 +74,25 @@ def print_hello_3(name: str, age: int) -> str:
 
 print(print_hello_3("Анатолий", 30))
 print(print_hello_3(name="Василий", age=40))
+
+# Декоратор с параметрами!
+def check_lenth_string_decorator(lenght: int = 10) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        def wrapper(name:str):
+            if len(name) > lenght:
+                raise ValueError(f"Длина строки {name} больше {lenght}")
+            else:
+                return func(name)
+        
+        return wrapper
+    return decorator
+           
+
+# Так как это декоратор с параметрами НУЖНО сделать вызов, чтобы он вернул декоратор
+@check_lenth_string_decorator()
+def say_my_name(name: str)-> str:
+    return(f"Привет, {name}!")
+
+
+print(say_my_name("Анатолий"))
+print(say_my_name("Анатолий Степанович"))
