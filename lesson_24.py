@@ -3,7 +3,7 @@
 - синтаксис анонимных функций
 """
 
-from marvel import small_dict, full_dict, simple_set
+from hw.marvel import small_dict, full_dict, simple_set
 
 
 def foo_0(x):

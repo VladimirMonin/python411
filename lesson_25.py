@@ -95,5 +95,5 @@ banan = print
 banan("Привет!")
 
 # Вызов функции 8
-foo = fucn8(10)
+foo = fucn8("пирожок")
 foo()
