@@ -2,58 +2,40 @@
 Тема: Функции. Аннотации типов. Typing. Декораторы. Урок: 26
 """
 
-"""
-ПРОСТАЯ АННОТАЦИЯ ТИПОВ
-
-:int - Целое число (integer)
-:float - Число с плавающей точкой (float)
-:str - Строка (string)
-:bool - Булево значение (boolean)
-:list - Список (list)
-:tuple - Кортеж (tuple)
-:dict - Словарь (dictionary)
-:None - Пустое значение (None)
-:set - Множество (set)
-
-Простая аннотация коллекций
-
-:list[int] - Список целых чисел (list of integers)
-:list[str] - Список строк (list of strings)
-:list[dict] - Список словарей (list of dictionaries)
-:set[int] - Множество целых чисел (set of integers)
-set|list - Пайплайн - ИЛИ
-"""
-
-"""
-РАСШИРЕННЫЕ АННОТАЦИИ ТИПОВ
-
-from typing import List, Tuple, Set, Dict, Callable, Iterable, Iterator, Any, Union, Optional
-
-Callable - вызываемый объект
-Any - любой (вы незнаете, или там много типов)
-Iterable - итерируемый объект
-Iterator - итератор
-Union - логическое или
-Optional - что то одно. Или тип данных или None
+from typing import Callable
 
 
-Dict[str, List[Union[int, str]]] - Словарь с ключами типа str и значениями типа списка, содержащего целые числа или строки
-pip install mypy
-"""
-from typing import List, Tuple, Set, Dict, Callable, Iterable, Iterator, Any, Union, Optional
+def fucn(a):
+    # a - хранится тут
+    def inner():
+        # a - используется тут
+        print(a)
+    return inner
 
-list_num = ['1', 2, 3, 4, 5]
+banan = print
+banan("Привет!")
 
+# Вызов функции 8
+foo = fucn("пирожок")
+foo()
 
-def func(num: List[int])->None:
-    print(num)
+# Функция счетчик - работающая на замыканиях
 
-func(list_num)
+def counter(start_value: int) -> Callable[[], int]:
+    def step() -> int:
+        nonlocal start_value
+        start_value += 1
+        return start_value
+    return step
 
-class MyClass:
-    pass
+# Создаем пару счетчиков с разным стартовым значением
 
-cl: MyClass = MyClass()
+counter1 = counter(10)
+counter2 = counter(20)
 
-def alpha_func(func: Callable[[List[int]], None]):
-    pass
+print(counter1())
+print(counter2())
+print(counter1())
+print(counter2())
+print(counter1())
+print(counter2())
