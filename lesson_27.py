@@ -57,7 +57,7 @@ SEARCH_STRING = "9900982"
 # YIELD - оператор генератора (можно перевести как дать, отдать)
 from typing import Any, Generator
 
-def my_generator(start: int, stop: int) -> Generator[int]:
+def my_generator(start: int, stop: int) -> Generator[int, None, None]:
     for i in range(start, stop):
         yield i
 
@@ -65,5 +65,49 @@ gen = my_generator(0, 2)
 
 print(next(gen)) # 0
 print(next(gen)) # 1
-print(next(gen)) # StopIteration
+# print(next(gen)) # StopIteration
 
+# Полная версия тайпхинта Generator
+# Generator[YieldType, SendType, ReturnType]
+
+# Расширенный вариант генераторной функции
+
+def advanced_generator(start:int, stop:int) -> Generator[int, str|None, bool]:
+    current = start
+    
+    while current < stop:
+        # Получаем команду от пользователя
+        command = yield current
+
+        if command == "double":
+            current *= 2
+        elif command == "square":
+            current **= 2
+        elif command == "cube":
+            current **= 3
+        else:
+            current += 1
+    return False
+
+# Запуск и тесты
+
+# Создание генератора
+gen = advanced_generator(0, 100000000)
+
+# Инициализация. Нужно чтобы он добрался до первого yield чтобы настраивать
+# Или через 1 next или через send(None)
+gen.send(None)
+print(next(gen))
+print(next(gen))
+# print(next(gen))
+# gen.send("double")
+# gen.send("cube")
+
+
+while gen:
+    try:
+        # print(next(gen))
+        print(gen.send("double"))
+    except StopIteration:
+        print("Конец")
+        break
