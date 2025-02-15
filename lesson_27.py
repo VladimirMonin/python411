@@ -48,9 +48,22 @@ STOP_ITEM = "10000000 число"
 SEARCH_STRING = "9900982"
 
 # Прочитаем построчно, поищем нужную строку и распечатаем
-with open("nums.txt", "r", encoding="utf-8") as file:
-    for line in file:
-        if SEARCH_STRING in line:
-            print(line.strip())
-            break
+# with open("nums.txt", "r", encoding="utf-8") as file:
+#     for line in file:
+#         if SEARCH_STRING in line:
+#             print(line.strip())
+#             break
+
+# YIELD - оператор генератора (можно перевести как дать, отдать)
+from typing import Any, Generator
+
+def my_generator(start: int, stop: int) -> Generator[int]:
+    for i in range(start, stop):
+        yield i
+
+gen = my_generator(0, 2)
+
+print(next(gen)) # 0
+print(next(gen)) # 1
+print(next(gen)) # StopIteration
 
