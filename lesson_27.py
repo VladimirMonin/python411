@@ -1,6 +1,16 @@
 """
 15.02.2025
 Тема: Генераторы и Итераторы. Урок: 27
+- встроенные в Python генераторы
+- отличие генераторов от списков
+- работа с большими последовательностями (нехватка ОЗУ)
+- передача генераторов из одного в другой (цепочка генераторов)
+- генераторы в функциях и yield
+- аннотация типов для генераторов
+- генераторы Generator[YieldType, SendType, ReturnType]
+- send в циклах
+- итераторы классы
+- тест 
 """
 string = "Банан"
 my_list = ["банан", "яблоко", "апельсин"]
@@ -18,96 +28,31 @@ enumerate() генерирует пары индекс-значение
 reversed() - генератор для обратного прохода по последовательности
 """
 
-MIN_VALUE = 0
-# OverflowError: Python int too large to convert to C ssize_t
-# MemoryError
-MAX_VALUE = 1_000_000_000_000_000
+from random import choice
+from typing import Generator
 
-# nums_list = list(range(MIN_VALUE, MAX_VALUE))
+fruit_list = ["яблоко", "банан", "апельсин", "груша", "киви", "ананас", "мандарин", "персик", "грейпфрут"]
 
-range_nums = range(MIN_VALUE, MAX_VALUE)
-
-# Обработка фильтром. Хочу четные числа
-even_nums = filter(lambda x: x % 2 == 0, range_nums)
-
-# Обработка MAP
-string_nums = map(lambda x: str(x) + " число", even_nums)
-
-# 7 нулей - десять миллионов
-# Так как мы пишем только четные - это 5 миллионов записей
-# Мой файл весит 100 мб
-STOP_ITEM = "10000000 число"
-# построчная запись в файл
-# with open("nums.txt", "w", encoding="utf-8") as file:
-#     for num in string_nums:
-#         if num == STOP_ITEM:
-#             break
-#         file.write(num + "\n")
-
-
-SEARCH_STRING = "9900982"
-
-# Прочитаем построчно, поищем нужную строку и распечатаем
-# with open("nums.txt", "r", encoding="utf-8") as file:
-#     for line in file:
-#         if SEARCH_STRING in line:
-#             print(line.strip())
-#             break
-
-# YIELD - оператор генератора (можно перевести как дать, отдать)
-from typing import Any, Generator
-
-def my_generator(start: int, stop: int) -> Generator[int, None, None]:
-    for i in range(start, stop):
-        yield i
-
-gen = my_generator(0, 2)
-
-print(next(gen)) # 0
-print(next(gen)) # 1
-# print(next(gen)) # StopIteration
-
-# Полная версия тайпхинта Generator
-# Generator[YieldType, SendType, ReturnType]
-
-# Расширенный вариант генераторной функции
-
-def advanced_generator(start:int, stop:int) -> Generator[int, str|None, bool]:
-    current = start
+class CoctailGenerator:
+    def __init__(self, products: list[str]):
+        self.products = products
+        
     
-    while current < stop:
-        # Получаем команду от пользователя
-        command = yield current
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        if not self.products:
+            raise StopIteration
+        
+        fruit = choice(self.products)
+        # Удаляем выбранный фрукт из списка
+        self.products.remove(fruit)
+        return f'{fruit.title()} использован(а)'
+    
 
-        if command == "double":
-            current *= 2
-        elif command == "square":
-            current **= 2
-        elif command == "cube":
-            current **= 3
-        else:
-            current += 1
-    return False
+# Тестируем
+coctail_gen = CoctailGenerator(fruit_list)
 
-# Запуск и тесты
-
-# Создание генератора
-gen = advanced_generator(0, 100000000)
-
-# Инициализация. Нужно чтобы он добрался до первого yield чтобы настраивать
-# Или через 1 next или через send(None)
-gen.send(None)
-print(next(gen))
-print(next(gen))
-# print(next(gen))
-# gen.send("double")
-# gen.send("cube")
-
-
-while gen:
-    try:
-        # print(next(gen))
-        print(gen.send("double"))
-    except StopIteration:
-        print("Конец")
-        break
+for coctail in coctail_gen:
+    print(coctail)
