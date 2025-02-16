@@ -35,8 +35,9 @@ str_end: str  Конец в строковом виде 00:00:00
 
 from dataclasses import dataclass, field
 import json
-from typing import Iterator, List, Dict
+from typing import Iterator, List, Dict, Optional
 
+JSON_DATA = "lesson_27_ts.json"
 
 @dataclass
 class TranscriptionChunk:
@@ -58,16 +59,47 @@ class TranscriptionChunk:
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 
+class TranscriptionIterator:
+    def __init__(self, transcription_data: List[Dict[str, List[Optional[float]]|str]]):
+        self.transcription_data = transcription_data
+        self.index = 0
+        self.data_len = len(self.transcription_data)
+
+    
+    def __iter__(self) -> Iterator[TranscriptionChunk]:
+        return self
+    
+    def __next__(self) -> TranscriptionChunk:
+        if self.index >= self.data_len:
+            raise StopIteration
+        data = self.transcription_data[self.index]
+        self.index += 1
+        return self._chunk_serialize(data)
+    
+    def _chunk_serialize(self, data: Dict[str, List[Optional[float]]|str]) -> TranscriptionChunk:
+        text = data['text']
+        start = data['timestamp'][0]
+        end = data['timestamp'][1] if data['timestamp'][1] is not None else start
+
+        instance = TranscriptionChunk(text, start, end)
+        return instance
+
 # Тесрирование
 def main():
-    test_data = {"timestamp": [0.0, 4.62], "text": "добро утра здравствуйте"}
+    with open(JSON_DATA, "r", encoding="utf-8") as file:
+        data = json.load(file)
 
-    transcription_chunk = TranscriptionChunk(
-        test_data["text"], test_data["timestamp"][0], test_data["timestamp"][1]
-    )
-    print(transcription_chunk)
+    # Мы можем проитерироваться по данным
+    # iterator = TranscriptionIterator(data)
+    # for chunk in iterator:
+    #     print(chunk)
+
+    # Мы можем получить первые 5 кусочков
+    iterator = TranscriptionIterator(data)
+    for _ in range(5):
+        print(next(iterator))
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     pass
