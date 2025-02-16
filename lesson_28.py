@@ -60,21 +60,79 @@ class TranscriptionChunk:
 
 
 class TranscriptionIterator:
+
+    ITERATIONS_MODE = {
+        "simple": "_simple_iteration",
+        "text_length": "_text_lenght_iteration",
+    }
+
     def __init__(self, transcription_data: List[Dict[str, List[Optional[float]]|str]]):
         self.transcription_data = transcription_data
         self.index = 0
         self.data_len = len(self.transcription_data)
+        self._iter_method = self._simple_iteration
+        self._chars= 0
 
     
     def __iter__(self) -> Iterator[TranscriptionChunk]:
         return self
     
     def __next__(self) -> TranscriptionChunk:
+        if self._iter_method == self._simple_iteration:
+            return self._simple_iteration()
+        
+        return self._text_lenght_iteration(self._chars)
+    
+    def _simple_iteration(self)-> TranscriptionChunk:
         if self.index >= self.data_len:
             raise StopIteration
         data = self.transcription_data[self.index]
         self.index += 1
         return self._chunk_serialize(data)
+    
+    def _text_lenght_iteration(self, chars: int) -> TranscriptionChunk:
+        """
+        Метод, который будет возвращать курски длинной chars символов
+        А так же таймкоды (стартовый первой части и финишный последней)
+        """
+        data = self.transcription_data[self.index]
+        start_timestamp = data['timestamp'][0]
+        end_timestamp = 0
+        current_chars = 0
+        text = ''
+
+        while current_chars < chars:
+            text += data['text']
+            current_chars += len(data['text'])
+            end_timestamp = data['timestamp'][1] if data['timestamp'][1] is not None else start_timestamp
+            self.index += 1
+            if self.index >= self.data_len:
+                break
+            data = self.transcription_data[self.index]
+
+        instance = TranscriptionChunk(text, start_timestamp, end_timestamp)
+        return instance
+    
+    def set_iteration_mode(self, mode: str = "simple", chars: int|None = None)-> None:
+        """
+        Метод для установки режима итерации
+        :param mode: Режим итерации
+        :param chars: Количество символов для режима text_length
+        :raises ValueError: Если режим не поддерживается
+        """
+        if mode not in self.ITERATIONS_MODE:
+            raise ValueError(f"Не поддерживается режим итерации: {mode}")
+        
+        mode_method = getattr(self, self.ITERATIONS_MODE[mode])
+
+        if mode == "text_length":
+            if chars is None:
+                raise ValueError("Длина текста не может быть None")
+            self._chars = chars
+
+        self._iter_method = mode_method
+
+
     
     def _chunk_serialize(self, data: Dict[str, List[Optional[float]]|str]) -> TranscriptionChunk:
         text = data['text']
@@ -96,10 +154,11 @@ def main():
 
     # Мы можем получить первые 5 кусочков
     iterator = TranscriptionIterator(data)
+    iterator.set_iteration_mode("text_length", 200)
+
     for _ in range(5):
         print(next(iterator))
 
-
 if __name__ == "__main__":
     main()
-    pass
+
