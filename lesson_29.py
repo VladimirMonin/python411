@@ -1,287 +1,286 @@
 """
 Тема: ООП Ч10. Знакомство с паттернами. Урок: 29
 - Одиночка (Singleton)
-- Пример логгера с цветным выводом и записью в файл
+    - Абстрактный прммер
+    - Пример простого логера
+    - Пример логгера с цветным выводом и записью в файл
+
+- Строитель (Builder)
+    - Пример пицца строителя. 
 """
 
-# Импорт логгера Python
-import logging
-from logging import Logger, StreamHandler, FileHandler, Formatter
-from typing import Optional, Literal, Any, ClassVar, Union, Set
-
-# Импорт пакета для работы с датой и временем
-import datetime
-import os
-
-# Импорт библиотеки для цветного вывода
-from colorama import Fore, Style, init
-
-# Инициализация colorama
-init(autoreset=True)
-
-# Типы уровней логирования
-LogLevel = Literal['info', 'debug', 'warning', 'error', 'critical']
-
-class LoggerSingleton:
-    """
-    Класс LoggerSingleton - реализация паттерна Одиночка для логгера с цветным выводом.
-    Обеспечивает единую точку логирования в приложении с возможностью записи в файл.
-    
-    Примеры использования:
-        logger = LoggerSingleton()
-        logger.log("Информационное сообщение")
-        
-        # Изменение уровня логирования через property
-        logger.log_level = logging.DEBUG
-        logger.log("Отладочное сообщение", 'debug')
-        
-        # Включение записи в файл
-        logger.enable_file_logging("app.log")
-    """
-    # Статическая переменная для хранения единственного экземпляра
-    _instance: ClassVar[Optional['LoggerSingleton']] = None
-    
-    # Цвета для разных уровней логирования
-    _log_colors: ClassVar[dict[str, str]] = {
-        'debug': Fore.CYAN,
-        'info': Fore.GREEN,
-        'warning': Fore.YELLOW,
-        'error': Fore.RED,
-        'critical': Fore.MAGENTA + Style.BRIGHT
-    }
-    
-    # Допустимые уровни логирования
-    _valid_levels: ClassVar[Set[int]] = {
-        logging.DEBUG,
-        logging.INFO,
-        logging.WARNING,
-        logging.ERROR,
-        logging.CRITICAL
-    }
-    
-    def __new__(cls, log_level: int = logging.INFO) -> 'LoggerSingleton':
-        """
-        Переопределение метода создания экземпляра класса.
-        Гарантирует, что будет создан только один экземпляр.
-        
-        Args:
-            log_level: Уровень логирования из модуля logging (по умолчанию INFO)
-            
-        Returns:
-            Экземпляр класса LoggerSingleton
-        """
-        if cls._instance is None:
-            # Если экземпляр еще не создан, создаем его
-            cls._instance = super().__new__(cls)
-            # Флаг, чтобы отслеживать, был ли инициализирован объект
-            cls._instance._initialized = False
-        return cls._instance
-    
-    def __init__(self, log_level: int = logging.INFO) -> None:
-        """
-        Инициализатор класса.
-        Если экземпляр уже инициализирован, просто обновляет уровень логирования.
-        
-        Args:
-            log_level: Уровень логирования из модуля logging (по умолчанию INFO)
-        """
-        if not getattr(self, '_initialized', False):
-            # Первоначальная инициализация логгера
-            self.logger: Logger = logging.getLogger('singleton_logger')
-            
-            # Создаем обработчик для вывода в консоль
-            console_handler = StreamHandler()
-            formatter = Formatter('%(asctime)s - %(levelname)s - %(message)s')
-            console_handler.setFormatter(formatter)
-            
-            # Проверяем, не были ли уже добавлены обработчики
-            if not self.logger.handlers:
-                self.logger.addHandler(console_handler)
-            
-            # Устанавливаем уровень логирования через setter
-            self.log_level = log_level
-            
-            # Флаг, указывающий, включена ли запись в файл
-            self._file_logging_enabled = False
-            self._log_file_path = None
-            
-            self._initialized = True
-    
-    @property
-    def log_level(self) -> int:
-        """
-        Получение текущего уровня логирования.
-        
-        Returns:
-            Текущий уровень логирования
-        """
-        return self.logger.level
-    
-    @log_level.setter
-    def log_level(self, level: int) -> None:
-        """
-        Установка уровня логирования с проверкой допустимых значений.
-        
-        Args:
-            level: Новый уровень логирования из модуля logging
-            
-        Raises:
-            ValueError: Если указан недопустимый уровень логирования
-        """
-        # Проверка валидности уровня логирования
-        if level not in self._valid_levels:
-            valid_names = [logging.getLevelName(lvl) for lvl in self._valid_levels]
-            raise ValueError(
-                f"Недопустимый уровень логирования: {level}. "
-                f"Используйте одно из следующих значений: {valid_names}"
-            )
-        
-        self.logger.setLevel(level)
-        print(f"{Fore.BLUE}Уровень логирования изменен на: {logging.getLevelName(level)}{Style.RESET_ALL}")
-    
-    def enable_file_logging(self, file_path: str) -> None:
-        """
-        Включает запись логов в файл.
-        
-        Args:
-            file_path: Путь к файлу логов
-        """
-        if self._file_logging_enabled and self._log_file_path == file_path:
-            print(f"{Fore.YELLOW}Запись логов в файл '{file_path}' уже включена{Style.RESET_ALL}")
-            return
-        
-        # Создаем директорию для файла лога, если она не существует
-        log_dir = os.path.dirname(file_path)
-        if log_dir and not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        
-        # Создаем обработчик для записи в файл
-        file_handler = FileHandler(file_path, mode='a', encoding='utf-8')
-        formatter = Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        file_handler.setFormatter(formatter)
-        file_handler.setLevel(self.logger.level)
-        
-        # Ищем существующий FileHandler и удаляем его
-        for handler in self.logger.handlers[:]:
-            if isinstance(handler, FileHandler):
-                self.logger.removeHandler(handler)
-        
-        # Добавляем новый FileHandler
-        self.logger.addHandler(file_handler)
-        self._file_logging_enabled = True
-        self._log_file_path = file_path
-        
-        print(f"{Fore.GREEN}Логирование в файл '{file_path}' включено{Style.RESET_ALL}")
-    
-    def disable_file_logging(self) -> None:
-        """
-        Отключает запись логов в файл.
-        """
-        if not self._file_logging_enabled:
-            print(f"{Fore.YELLOW}Запись логов в файл и так отключена{Style.RESET_ALL}")
-            return
-        
-        # Удаляем FileHandler
-        for handler in self.logger.handlers[:]:
-            if isinstance(handler, FileHandler):
-                self.logger.removeHandler(handler)
-        
-        self._file_logging_enabled = False
-        print(f"{Fore.GREEN}Запись логов в файл отключена{Style.RESET_ALL}")
-    
-    def log(self, message: str, level: LogLevel = 'info') -> None:
-        """
-        Метод для логирования сообщений с цветным выводом.
-        
-        Args:
-            message: Сообщение для логирования
-            level: Уровень логирования (info, debug, warning, error, critical)
-        """
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
-        # Получаем цвет для данного уровня логирования
-        color = self._log_colors.get(level, Fore.WHITE)
-        colored_message = f"{color}{timestamp} - {message}{Style.RESET_ALL}"
-        
-        # Для записи в файл используем обычное сообщение без цвета
-        plain_message = message
-        
-        match level.lower():
-            case 'info':
-                self.logger.info(colored_message)
-            case 'debug':
-                self.logger.debug(colored_message)
-            case 'warning':
-                self.logger.warning(colored_message)
-            case 'error':
-                self.logger.error(colored_message)
-            case 'critical':
-                self.logger.critical(colored_message)
-            case _:
-                self.logger.info(colored_message)
-    
-    def __str__(self) -> str:
-        """
-        Строковое представление объекта.
-        
-        Returns:
-            Строка с информацией о логгере
-        """
-        status = "включена" if self._file_logging_enabled else "отключена"
-        file_info = f", запись в файл {status}" + (f" ('{self._log_file_path}')" if self._file_logging_enabled else "")
-        return f'Логгер-одиночка (id: {id(self)}), уровень: {logging.getLevelName(self.logger.level)}{file_info}'
+"""
+Опишем пример паттерна Строитель.
+На примере пиццестроения.
+С возможностью выбора из 2х видов пиццы (Сырный Цыплёнок, Пепперони c грибами)
+А так же выбора размера (Маленькая, Средняя, Большая)
+И опционально сырный борт и доп. ингридиенты.
 
 
-# Примеры использования
-if __name__ == '__main__':
-    # Создаем первый экземпляр логгера с уровнем INFO
-    logger1 = LoggerSingleton(logging.INFO)
-    print(logger1)
-    logger1.log("Это информационное сообщение")
+Структура классов
+- PizzaDirector - представляет директора. Можно поросить тип пиццы, а так же размер и доп. опции (сырный борт, доп. ингридиенты)
+
+- AbstractPizzaBuilder - абстрактный класс строителя. Определяет интерфейс для создания различных типов пиццы.
+
+- CheeseChickenPizzaBuilder - класс строителя для пиццы Сырный Цыплёнок
+- PepperoniPizzaBuilder - класс строителя для пиццы Пепперони c грибами
+
+- PizzaCheeseChiken - класс продукта
+- PizzaPepperoni - класс продукта
+"""
+
+from abc import ABC, abstractmethod
+from enum import Enum, auto
+from typing import List, Optional
+
+# Размеры пиццы
+class PizzaSize(Enum):
+    SMALL = "Маленькая"
+    MEDIUM = "Средняя"
+    LARGE = "Большая"
+
+# Дополнительные ингредиенты
+class ExtraIngredient(Enum):
+    CHEESE = "Дополнительный сыр"
+    PEPPERONI = "Дополнительная пепперони"
+    MUSHROOMS = "Дополнительные грибы"
+    BACON = "Бекон"
+    OLIVES = "Оливки"
+    PINEAPPLE = "Ананас"
+
+# Исключения
+class PizzaException(Exception):
+    pass
+
+class CheeseBorderNotAvailableException(PizzaException):
+    def __init__(self):
+        super().__init__("Сырный борт доступен только для средней и большой пиццы")
+
+# Продукты
+class Pizza:
+    def __init__(self, name: str):
+        self.name = name
+        self.size = None
+        self.has_cheese_border = False
+        self.extra_ingredients = []
+        self.base_ingredients = []
     
-    # Включаем запись в файл
-    logger1.enable_file_logging("logs/app.log")
-    logger1.log("Это сообщение будет записано и в консоль, и в файл")
+    def __str__(self):
+        result = f"Пицца: {self.name}\n"
+        result += f"Размер: {self.size.value if self.size else 'Не указан'}\n"
+        result += f"Сырный борт: {'Да' if self.has_cheese_border else 'Нет'}\n"
+        result += "Базовые ингредиенты: " + ", ".join(self.base_ingredients) + "\n"
+        if self.extra_ingredients:
+            result += "Дополнительные ингредиенты: " + ", ".join([ing.value for ing in self.extra_ingredients]) + "\n"
+        return result
+
+class PizzaCheeseChicken(Pizza):
+    def __init__(self):
+        super().__init__("Сырный Цыплёнок")
+        self.base_ingredients = ["Сыр", "Курица", "Сырный соус", "Специи"]
+
+class PizzaPepperoni(Pizza):
+    def __init__(self):
+        super().__init__("Пепперони с грибами")
+        self.base_ingredients = ["Пепперони", "Грибы", "Сыр", "Томатный соус"]
+
+# Абстрактный строитель
+class AbstractPizzaBuilder(ABC):
+    @abstractmethod
+    def reset(self):
+        pass
     
-    # Создаем "второй" экземпляр логгера и меняем уровень через property
-    logger2 = LoggerSingleton()
-    logger2.log_level = logging.DEBUG  # Используем setter для изменения уровня
-    print(logger2)
+    @abstractmethod
+    def set_size(self, size: PizzaSize):
+        pass
     
-    # Проверяем, что это тот же объект
-    print(f"logger1 is logger2: {logger1 is logger2}")
+    @abstractmethod
+    def add_cheese_border(self):
+        pass
     
-    # Логируем с разными уровнями
-    logger2.log("Это отладочное сообщение", 'debug')
-    logger2.log("Это предупреждение", 'warning')
-    logger2.log("Это ошибка", 'error')
-    logger2.log("Это критическая ошибка", 'critical')
+    @abstractmethod
+    def add_extra_ingredient(self, ingredient: ExtraIngredient):
+        pass
     
-    # Создаем "третий" экземпляр и устанавливаем уровень ERROR
-    logger3 = LoggerSingleton()
-    logger3.log_level = logging.ERROR  # Используем setter
-    print(logger3)
+    @abstractmethod
+    def get_pizza(self):
+        pass
+
+# Конкретные строители
+class CheeseChickenPizzaBuilder(AbstractPizzaBuilder):
+    def __init__(self):
+        self.reset()
     
-    # Эти сообщения не будут выведены из-за уровня логирования ERROR
-    logger3.log("Это информационное сообщение не будет выведено", 'info')
-    logger3.log("Это предупреждение не будет выведено", 'warning')
+    def reset(self):
+        self.pizza = PizzaCheeseChicken()
     
-    # А эти будут выведены
-    logger3.log("Эта ошибка будет выведена", 'error')
-    logger3.log("Эта критическая ошибка будет выведена", 'critical')
+    def set_size(self, size: PizzaSize):
+        self.pizza.size = size
+        return self
     
-    # Отключаем запись в файл
-    logger3.disable_file_logging()
-    logger3.log("Это сообщение будет выведено только в консоль", 'critical')
+    def add_cheese_border(self):
+        if not self.pizza.size or self.pizza.size == PizzaSize.SMALL:
+            raise CheeseBorderNotAvailableException()
+        self.pizza.has_cheese_border = True
+        return self
     
-    # Демонстрация проверки уровня логирования
-    try:
-        logger3.log_level = 999  # Недопустимый уровень
-    except ValueError as e:
-        print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
+    def add_extra_ingredient(self, ingredient: ExtraIngredient):
+        self.pizza.extra_ingredients.append(ingredient)
+        return self
     
-    # Демонстрация работы с одним экземпляром
-    print(f"\nВсе экземпляры совпадают:")
-    print(f"logger1: {id(logger1)}")
-    print(f"logger2: {id(logger2)}")
-    print(f"logger3: {id(logger3)}")
+    def get_pizza(self):
+        pizza = self.pizza
+        self.reset()
+        return pizza
+
+class PepperoniPizzaBuilder(AbstractPizzaBuilder):
+    def __init__(self):
+        self.reset()
+    
+    def reset(self):
+        self.pizza = PizzaPepperoni()
+    
+    def set_size(self, size: PizzaSize):
+        self.pizza.size = size
+        return self
+    
+    def add_cheese_border(self):
+        if not self.pizza.size or self.pizza.size == PizzaSize.SMALL:
+            raise CheeseBorderNotAvailableException()
+        self.pizza.has_cheese_border = True
+        return self
+    
+    def add_extra_ingredient(self, ingredient: ExtraIngredient):
+        self.pizza.extra_ingredients.append(ingredient)
+        return self
+    
+    def get_pizza(self):
+        pizza = self.pizza
+        self.reset()
+        return pizza
+
+# Директор
+class PizzaDirector:
+    def __init__(self):
+        self.builder = None
+    
+    def set_builder(self, builder: AbstractPizzaBuilder):
+        self.builder = builder
+    
+    def make_cheese_chicken_pizza(self, size: PizzaSize, with_cheese_border: bool = False, 
+                                extra_ingredients: List[ExtraIngredient] = None):
+        if not self.builder or not isinstance(self.builder, CheeseChickenPizzaBuilder):
+            self.builder = CheeseChickenPizzaBuilder()
+        
+        self.builder.reset()
+        self.builder.set_size(size)
+        
+        if with_cheese_border:
+            try:
+                self.builder.add_cheese_border()
+            except CheeseBorderNotAvailableException as e:
+                print(f"Ошибка: {e}")
+        
+        if extra_ingredients:
+            for ingredient in extra_ingredients:
+                self.builder.add_extra_ingredient(ingredient)
+        
+        return self.builder.get_pizza()
+    
+    def make_pepperoni_pizza(self, size: PizzaSize, with_cheese_border: bool = False, 
+                            extra_ingredients: List[ExtraIngredient] = None):
+        if not self.builder or not isinstance(self.builder, PepperoniPizzaBuilder):
+            self.builder = PepperoniPizzaBuilder()
+        
+        self.builder.reset()
+        self.builder.set_size(size)
+        
+        if with_cheese_border:
+            try:
+                self.builder.add_cheese_border()
+            except CheeseBorderNotAvailableException as e:
+                print(f"Ошибка: {e}")
+        
+        if extra_ingredients:
+            for ingredient in extra_ingredients:
+                self.builder.add_extra_ingredient(ingredient)
+        
+        return self.builder.get_pizza()
+
+# Пользовательский интерфейс
+def main():
+    director = PizzaDirector()
+    
+    print("Добро пожаловать в пиццерию!")
+    
+    while True:
+        print("\nВыберите тип пиццы:")
+        print("1. Сырный Цыплёнок")
+        print("2. Пепперони с грибами")
+        print("0. Выход")
+        
+        try:
+            choice = int(input("Ваш выбор: "))
+            
+            if choice == 0:
+                print("Спасибо за заказ! До свидания!")
+                break
+            elif choice not in [1, 2]:
+                print("Неверный выбор. Пожалуйста, выберите 1, 2 или 0.")
+                continue
+            
+            # Выбор размера
+            print("\nВыберите размер пиццы:")
+            print("1. Маленькая")
+            print("2. Средняя")
+            print("3. Большая")
+            
+            size_choice = int(input("Ваш выбор: "))
+            if size_choice not in [1, 2, 3]:
+                print("Неверный выбор размера. Заказ отменен.")
+                continue
+            
+            size = {1: PizzaSize.SMALL, 2: PizzaSize.MEDIUM, 3: PizzaSize.LARGE}[size_choice]
+            
+            # Сырный борт
+            cheese_border = False
+            if size_choice in [2, 3]:  # Средняя или большая
+                cheese_border_choice = input("\nДобавить сырный борт? (да/нет): ").lower()
+                cheese_border = cheese_border_choice in ["да", "yes", "y", "д"]
+            
+            # Дополнительные ингредиенты
+            extra_ingredients = []
+            print("\nДоступные дополнительные ингредиенты:")
+            for i, ingredient in enumerate(ExtraIngredient, 1):
+                print(f"{i}. {ingredient.value}")
+            print("0. Закончить выбор")
+            
+            while True:
+                ingredient_choice = int(input("Выберите ингредиент (0 для завершения): "))
+                if ingredient_choice == 0:
+                    break
+                if 1 <= ingredient_choice <= len(ExtraIngredient):
+                    extra_ingredients.append(list(ExtraIngredient)[ingredient_choice-1])
+                    print(f"Добавлен ингредиент: {list(ExtraIngredient)[ingredient_choice-1].value}")
+                else:
+                    print("Неверный выбор ингредиента.")
+            
+            # Создание пиццы
+            pizza = None
+            if choice == 1:  # Сырный Цыплёнок
+                pizza = director.make_cheese_chicken_pizza(size, cheese_border, extra_ingredients)
+            else:  # Пепперони с грибами
+                pizza = director.make_pepperoni_pizza(size, cheese_border, extra_ingredients)
+            
+            print("\nВаш заказ:")
+            print(pizza)
+            
+        except ValueError:
+            print("Ошибка ввода. Пожалуйста, введите число.")
+        except PizzaException as e:
+            print(f"Ошибка при создании пиццы: {e}")
+        except Exception as e:
+            print(f"Неожиданная ошибка: {e}")
+
+if __name__ == "__main__":
+    main()
