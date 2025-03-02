@@ -272,7 +272,7 @@ def main():
             else:  # Пепперони с грибами
                 pizza = director.make_pepperoni_pizza(size, cheese_border, extra_ingredients)
             
-            print("\nВаш заказ:")
+            print("\nВаш заказ ГОТОВ:")
             print(pizza)
             
         except ValueError:
