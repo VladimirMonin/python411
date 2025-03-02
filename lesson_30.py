@@ -1,71 +1,115 @@
 """
 Тема: ООП Ч11. Порождающие паттерны. Практика. Урок: 30
 - Строитель (Builder)
+- Абстрактная фабрика (Abstract Factory)
 """
 
-from dataclasses import dataclass
+"""
+Полная версия.
+Абстрактная фабрика (Abstract Factory)
+
+Структура классов
+- АБСТРАКТНЫЕ ПРОДУКТЫ
+  - AbstractImageAnalyzer
+  - AbstractTextGenerator
+  - AbstractTextFormatter
+  - AbstractAudioTrascriber
+
+- АБСТРАКТНАЯ ФАБРИКА
+  - AbstractProductFactory
+
+- Реальные продукты
+  - ClaudeImageAnalyzer
+  - ClaudeTextGenerator
+
+
+  - OpenAiAudioTranscriber
+  - OpenAiImageAnalyzer
+  - OpenAiTextGenerator
+
+  - MistralImageAnalyzer
+  - MistralTextGenerator
+
+"""
+
 from typing import List, Optional, Self
+from abc import ABC, abstractmethod
 
-@dataclass
-class Pizza:
-    avalible_products = ["сыр", "грибы", "колбаса", "оливки", "перец", "томаты", "анчоусы", "лосось"]
-    avalible_sizes = ["Маленькая", "Средняя", "Большая", ""]
+
+# Сделаеем только 2 абстратных продукта. Анализатор картинок и генератор текста. и Реальные. OpenAI и Mistral
+
+# АБСТРАКТНЫЕ ПРОДУКТЫ
+
+class AbstractImageAnalyzer(ABC):
+    @abstractmethod
+    def analyze_image(self, image_path: str) -> str:
+        pass
+        # print(f'Анализатор картинок {self.__class__.__name__}: Анализирую картинку {image_path}')
+
+class AbstractTextGenerator(ABC):
+    @abstractmethod
+    def generate_text(self, prompt: str) -> str:
+        pass
+        # print(f'Генератор текста {self.__class__.__name__}: Генерирую текст по запросу {prompt}')
+
+# РЕАЛЬНЫЕ ПРОДУКТЫ
+
+class OpenAiImageAnalyzer(AbstractImageAnalyzer):
+    def analyze_image(self, image_path: str) -> str:
+        print(f'OpenAI: Анализирую картинку {image_path}')
+        return f'Результат анализа картинки: {image_path}'
+
+class OpenAiTextGenerator(AbstractTextGenerator):
+    def generate_text(self, prompt: str) -> str:
+        print(f'OpenAI: Генерирую текст по запросу {prompt}')
+        return f'Результат генерации текста: {prompt}'
+
+class MistralImageAnalyzer(AbstractImageAnalyzer):
+    def analyze_image(self, image_path: str) -> str:
+        print(f'Mistral: Анализирую картинку {image_path}')
+        return f'Результат анализа картинки: {image_path}'
+
+class MistralTextGenerator(AbstractTextGenerator):
+    def generate_text(self, prompt: str) -> str:
+        print(f'Mistral: Генерирую текст по запросу {prompt}')
+        return f'Результат генерации текста: {prompt}'
+
+# АБСТРАКТНАЯ ФАБРИКА
+
+class AbstractProductFactory(ABC):
+    @abstractmethod
+    def create_image_analyzer(self) -> AbstractImageAnalyzer:
+        pass
+
+    @abstractmethod
+    def create_text_generator(self) -> AbstractTextGenerator:
+        pass
+
+
+# РЕАЛЬНЫЕ ПРОДУКТЫ
+
+# Фабрика OpenAI
+class OpenAiFactory(AbstractProductFactory):
+    def create_image_analyzer(self) -> AbstractImageAnalyzer:
+        return OpenAiImageAnalyzer()
     
-    size: str
-    cheese_bord: bool
-    additional_ingredients: List[str]
-
-    def __post_init__(self) -> None:
-        if any(ingredient.lower() not in self.avalible_products for ingredient in self.additional_ingredients):
-            raise ValueError("Один или несколько ингредиентов не доступны")
-        
-        if self.size.capitalize() not in self.avalible_sizes:
-            raise ValueError("Недопустимый размер пиццы")
-        
-
-    def __str__(self) -> str:
-        return f"Пицца. Размер: {self.size}, Сырный борт: {self.cheese_bord}, Дополнительные ингредиенты: {self.additional_ingredients}"
-
-
-# Сразу сделаем обычного строителя.
-class PizzaBuilder:
-    def __init__(self):
-        self.pizza = Pizza(size="", cheese_bord=False, additional_ingredients=[])
-
-    def set_size(self, size) -> Self:
-        self.pizza.size = size
-        return self
+    def create_text_generator(self) -> AbstractTextGenerator:
+        return OpenAiTextGenerator()
     
-    def add_cheese_bord(self) -> Self:
-        self.pizza.cheese_bord = True
-        return self
+# Фабрика Mistral
+class MistralFactory(AbstractProductFactory):
+    def create_image_analyzer(self) -> AbstractImageAnalyzer:
+        return MistralImageAnalyzer()
     
-    def add_ingredient(self, *ingredient):
-        self.pizza.additional_ingredients.extend(list(ingredient))
-        return self
-    
-    def build(self) -> Pizza:
-        return self.pizza
+    def create_text_generator(self) -> AbstractTextGenerator:
+        return MistralTextGenerator()
     
 
-# Директор в виде менеджера
-class PizzaManager:
-    def __init__(self) -> None:
-        self.builder = PizzaBuilder()
-        self.pizza: Optional[Pizza] = None
-
-    def make_pizza(self, size: str, cheese_bord: bool, *ingredients) -> Pizza:
-        # Собираем базовую пиццу. Потом проверим на сырный борт
-        self.pizza = self.builder.set_size(size).add_ingredient(*ingredients).build()
-        
-        # Если сырный борт, то добавляем
-        if cheese_bord:
-            self.pizza = self.builder.add_cheese_bord().build()
-        return self.pizza
+# Сделаем анализ картинок через Open AI
+if __name__ == '__main__':
+    openai_factory = OpenAiFactory()
+    openai_image_analyzer = openai_factory.create_image_analyzer()
     
-
-if __name__ == "__main__":
-    manager = PizzaManager()
-    # Сделаем большую пиццу с сырным бортом и добавим колбасу и оливки
-    pizza = manager.make_pizza("Большая", True, "колбаса", "оливки", "томаты")
-    print(pizza)
+    image_path = input('Введите путь до картинки:')
+    openai_image_analyzer.analyze_image(image_path)
+    
