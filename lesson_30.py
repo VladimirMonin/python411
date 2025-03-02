@@ -10,84 +10,167 @@ from settings import MISTRAL_API_KEY
 # pip install mistralai
 from mistralai import Mistral
 import base64
+from typing import List, Dict, Any, Optional, Union
 
-# model = "mistral-large-latest"
-
-# client = Mistral(api_key=MISTRAL_API_KEY)
-
-# chat_response = client.chat.complete(
-#     model = model,
-#     messages = [
-#         {
-#             "role": "user",
-#             "content": "Расскажи шутку про обезъянку и французский Mistral API"
-#         },
-#     ]
-# )
-
-# print(chat_response.choices[0].message.content)
-
-
-###############################################
-
-
-def encode_image(image_path):
-    """Encode the image to base64."""
-    try:
-        with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode('utf-8')
-    except FileNotFoundError:
-        print(f"Error: The file {image_path} was not found.")
-        return None
-    except Exception as e:  # Added general exception handling
-        print(f"Error: {e}")
-        return None
-
-# Path to your image
-image_path = r"C:\Users\user\Pictures\2025-01-18_14-07-29.png"
-
-# Getting the base64 string
-base64_image = encode_image(image_path)
-
-
-# Specify model
-model = "pixtral-12b-2409"
-
-# Initialize the Mistral client
-client = Mistral(api_key=MISTRAL_API_KEY)
-
-# Define the messages for the chat
-messages = [
-    {
-        "role": "user",
-        "content": [
-            {
-                "type": "text",
-                "text": "Детально опиши что изображено на этом изображении. Используй максимально подробные детали."
-            },
-            {
-                "type": "image_url",
-                "image_url": f"data:image/jpeg;base64,{base64_image}" 
-            }
+class MistralRequestBuilder:
+    """Строитель для запросов к Mistral API."""
+    
+    def __init__(self):
+        self.api_key = MISTRAL_API_KEY
+        self.client = Mistral(api_key=self.api_key)
+        self.model = None
+        self.messages = []
+        self.inputs = []
+        self.request_type = None
+    
+    def with_api_key(self, api_key: str):
+        """Установка API ключа."""
+        self.api_key = api_key
+        self.client = Mistral(api_key=self.api_key)
+        return self
+    
+    def with_model(self, model: str):
+        """Установка модели."""
+        self.model = model
+        return self
+    
+    def with_text_message(self, text: str, role: str = "user"):
+        """Добавление текстового сообщения."""
+        self.messages.append({"role": role, "content": text})
+        return self
+    
+    def with_image_message(self, text: str, image_path: str, role: str = "user"):
+        """Добавление сообщения с изображением."""
+        base64_image = self._encode_image(image_path)
+        
+        content = [
+            {"type": "text", "text": text},
+            {"type": "image_url", "image_url": f"data:image/jpeg;base64,{base64_image}"}
         ]
-    }
-]
+        
+        self.messages.append({"role": role, "content": content})
+        return self
+    
+    def with_moderation_input(self, text: str):
+        """Добавление текста для модерации."""
+        self.inputs.append(text)
+        return self
+    
+    def as_text_generation(self):
+        """Указание типа запроса как генерация текста."""
+        self.request_type = "text_generation"
+        return self
+    
+    def as_vision(self):
+        """Указание типа запроса как модель видения."""
+        self.request_type = "vision"
+        return self
+    
+    def as_moderation(self):
+        """Указание типа запроса как модерация."""
+        self.request_type = "moderation"
+        return self
+    
+    def build(self):
+        """Создание объекта запроса."""
+        if not self.api_key:
+            raise ValueError("API key is required")
+        
+        if not self.model:
+            raise ValueError("Model is required")
+        
+        if not self.request_type:
+            raise ValueError("Request type is required")
+        
+        if self.request_type in ["text_generation", "vision"] and not self.messages:
+            raise ValueError("Messages are required for text generation or vision")
+        
+        if self.request_type == "moderation" and not self.inputs:
+            raise ValueError("Inputs are required for moderation")
+        
+        return MistralRequest(
+            client=self.client,
+            model=self.model,
+            messages=self.messages,
+            inputs=self.inputs,
+            request_type=self.request_type
+        )
+    
+    def _encode_image(self, image_path: str) -> str:
+        """Кодирование изображения в base64."""
+        try:
+            with open(image_path, "rb") as image_file:
+                return base64.b64encode(image_file.read()).decode('utf-8')
+        except FileNotFoundError:
+            raise ValueError(f"Image file not found: {image_path}")
+        except Exception as e:
+            raise ValueError(f"Error encoding image: {e}")
 
-# Get the chat response
-chat_response = client.chat.complete(
-    model=model,
-    messages=messages
-)
 
-# Print the content of the response
-print(chat_response.choices[0].message.content)
+class MistralRequest:
+    """Класс для выполнения запросов к Mistral API."""
+    
+    def __init__(self, client, model, messages, inputs, request_type):
+        self.client = client
+        self.model = model
+        self.messages = messages
+        self.inputs = inputs
+        self.request_type = request_type
+    
+    def execute(self):
+        """Выполнение запроса."""
+        if self.request_type == "text_generation":
+            response = self.client.chat.complete(
+                model=self.model,
+                messages=self.messages
+            )
+            return response.choices[0].message.content
+            
+        elif self.request_type == "vision":
+            response = self.client.chat.complete(
+                model=self.model,
+                messages=self.messages
+            )
+            return response.choices[0].message.content
+            
+        elif self.request_type == "moderation":
+            response = self.client.classifiers.moderate(
+                model=self.model,
+                inputs=self.inputs
+            )
+            return response
+        
+        else:
+            raise ValueError(f"Unsupported request type: {self.request_type}")
 
-"""
-Изображение представляет собой скриншот интерфейса музыкального плеера. Интерфейс разделен на две основные секции. Слева находится панель управления, а справа — список треков.
 
-Панель управления состоит из шести различных кнопок, каждая из которых выполняет определенную функцию. Сверху вниз эти кнопки включают кнопку воспроизведения, кнопку приостановки, кнопку перемотки вперед, кнопку перемотки назад, кнопку повтора и кнопку выхода.
 
-Справа от панели управления находится список треков. В списке отображаются три трека, каждый из которых имеет название и продолжительность. Название треков на русском языке, а продолжительность указана в секундах.
+# Пример 1: Генерация текста
+text_response = (MistralRequestBuilder()
+    .with_model("mistral-large-latest")
+    .with_text_message("Правда ли, что франзцузы едят лягушек?")
+    .as_text_generation()
+    .build()
+    .execute())
 
-Фон интерфейса черный, что создает резкий контраст с белым текстом и красными кнопками. Общая компоновка интерфейса указывает на удобный для пользователя дизайн, с четко видимыми кнопками управления и списком треков.
-"""
+print("Text response:", text_response)
+
+# Пример 2: Модель видения
+vision_response = (MistralRequestBuilder()
+    .with_model("pixtral-12b-2409")
+    .with_image_message("Детально опиши изображение", r"C:\Users\user\Pictures\photo_2024-08-05_23-15-36.jpg")
+    .as_vision()
+    .build()
+    .execute())
+
+print("Vision response:", vision_response)
+
+# Пример 3: Модерация
+moderation_response = (MistralRequestBuilder()
+    .with_model("mistral-moderation-latest")
+    .with_moderation_input("Я просто ненавижу ваш ресторан. Повара на кол. А потом сжечь!")
+    .as_moderation()
+    .build()
+    .execute())
+
+print("Moderation response:", moderation_response)
