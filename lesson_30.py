@@ -4,112 +4,90 @@
 - Абстрактная фабрика (Abstract Factory)
 """
 
+
+from settings import MISTRAL_API_KEY
+
+# pip install mistralai
+from mistralai import Mistral
+import base64
+
+# model = "mistral-large-latest"
+
+# client = Mistral(api_key=MISTRAL_API_KEY)
+
+# chat_response = client.chat.complete(
+#     model = model,
+#     messages = [
+#         {
+#             "role": "user",
+#             "content": "Расскажи шутку про обезъянку и французский Mistral API"
+#         },
+#     ]
+# )
+
+# print(chat_response.choices[0].message.content)
+
+
+###############################################
+
+
+def encode_image(image_path):
+    """Encode the image to base64."""
+    try:
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+    except FileNotFoundError:
+        print(f"Error: The file {image_path} was not found.")
+        return None
+    except Exception as e:  # Added general exception handling
+        print(f"Error: {e}")
+        return None
+
+# Path to your image
+image_path = r"C:\Users\user\Pictures\2025-01-18_14-07-29.png"
+
+# Getting the base64 string
+base64_image = encode_image(image_path)
+
+
+# Specify model
+model = "pixtral-12b-2409"
+
+# Initialize the Mistral client
+client = Mistral(api_key=MISTRAL_API_KEY)
+
+# Define the messages for the chat
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "Детально опиши что изображено на этом изображении. Используй максимально подробные детали."
+            },
+            {
+                "type": "image_url",
+                "image_url": f"data:image/jpeg;base64,{base64_image}" 
+            }
+        ]
+    }
+]
+
+# Get the chat response
+chat_response = client.chat.complete(
+    model=model,
+    messages=messages
+)
+
+# Print the content of the response
+print(chat_response.choices[0].message.content)
+
 """
-Полная версия.
-Абстрактная фабрика (Abstract Factory)
+Изображение представляет собой скриншот интерфейса музыкального плеера. Интерфейс разделен на две основные секции. Слева находится панель управления, а справа — список треков.
 
-Структура классов
-- АБСТРАКТНЫЕ ПРОДУКТЫ
-  - AbstractImageAnalyzer
-  - AbstractTextGenerator
-  - AbstractTextFormatter
-  - AbstractAudioTrascriber
+Панель управления состоит из шести различных кнопок, каждая из которых выполняет определенную функцию. Сверху вниз эти кнопки включают кнопку воспроизведения, кнопку приостановки, кнопку перемотки вперед, кнопку перемотки назад, кнопку повтора и кнопку выхода.
 
-- АБСТРАКТНАЯ ФАБРИКА
-  - AbstractProductFactory
+Справа от панели управления находится список треков. В списке отображаются три трека, каждый из которых имеет название и продолжительность. Название треков на русском языке, а продолжительность указана в секундах.
 
-- Реальные продукты
-  - ClaudeImageAnalyzer
-  - ClaudeTextGenerator
-
-
-  - OpenAiAudioTranscriber
-  - OpenAiImageAnalyzer
-  - OpenAiTextGenerator
-
-  - MistralImageAnalyzer
-  - MistralTextGenerator
-
+Фон интерфейса черный, что создает резкий контраст с белым текстом и красными кнопками. Общая компоновка интерфейса указывает на удобный для пользователя дизайн, с четко видимыми кнопками управления и списком треков.
 """
-
-from typing import List, Optional, Self
-from abc import ABC, abstractmethod
-
-
-# Сделаеем только 2 абстратных продукта. Анализатор картинок и генератор текста. и Реальные. OpenAI и Mistral
-
-# АБСТРАКТНЫЕ ПРОДУКТЫ
-
-class AbstractImageAnalyzer(ABC):
-    @abstractmethod
-    def analyze_image(self, image_path: str) -> str:
-        pass
-        # print(f'Анализатор картинок {self.__class__.__name__}: Анализирую картинку {image_path}')
-
-class AbstractTextGenerator(ABC):
-    @abstractmethod
-    def generate_text(self, prompt: str) -> str:
-        pass
-        # print(f'Генератор текста {self.__class__.__name__}: Генерирую текст по запросу {prompt}')
-
-# РЕАЛЬНЫЕ ПРОДУКТЫ
-
-class OpenAiImageAnalyzer(AbstractImageAnalyzer):
-    def analyze_image(self, image_path: str) -> str:
-        print(f'OpenAI: Анализирую картинку {image_path}')
-        return f'Результат анализа картинки: {image_path}'
-
-class OpenAiTextGenerator(AbstractTextGenerator):
-    def generate_text(self, prompt: str) -> str:
-        print(f'OpenAI: Генерирую текст по запросу {prompt}')
-        return f'Результат генерации текста: {prompt}'
-
-class MistralImageAnalyzer(AbstractImageAnalyzer):
-    def analyze_image(self, image_path: str) -> str:
-        print(f'Mistral: Анализирую картинку {image_path}')
-        return f'Результат анализа картинки: {image_path}'
-
-class MistralTextGenerator(AbstractTextGenerator):
-    def generate_text(self, prompt: str) -> str:
-        print(f'Mistral: Генерирую текст по запросу {prompt}')
-        return f'Результат генерации текста: {prompt}'
-
-# АБСТРАКТНАЯ ФАБРИКА
-
-class AbstractProductFactory(ABC):
-    @abstractmethod
-    def create_image_analyzer(self) -> AbstractImageAnalyzer:
-        pass
-
-    @abstractmethod
-    def create_text_generator(self) -> AbstractTextGenerator:
-        pass
-
-
-# РЕАЛЬНЫЕ ПРОДУКТЫ
-
-# Фабрика OpenAI
-class OpenAiFactory(AbstractProductFactory):
-    def create_image_analyzer(self) -> AbstractImageAnalyzer:
-        return OpenAiImageAnalyzer()
-    
-    def create_text_generator(self) -> AbstractTextGenerator:
-        return OpenAiTextGenerator()
-    
-# Фабрика Mistral
-class MistralFactory(AbstractProductFactory):
-    def create_image_analyzer(self) -> AbstractImageAnalyzer:
-        return MistralImageAnalyzer()
-    
-    def create_text_generator(self) -> AbstractTextGenerator:
-        return MistralTextGenerator()
-    
-
-# Сделаем анализ картинок через Open AI
-if __name__ == '__main__':
-    openai_factory = OpenAiFactory()
-    openai_image_analyzer = openai_factory.create_image_analyzer()
-    
-    image_path = input('Введите путь до картинки:')
-    openai_image_analyzer.analyze_image(image_path)
-    
