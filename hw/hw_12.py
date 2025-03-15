@@ -19,25 +19,28 @@ class TextRequest:
         self.api_key = api_key
         self.client = Mistral(api_key=self.api_key)
 
-    def send(self, text: str, model: str = "mistral-large-latest") -> dict:
+    def send(self, text: str, history: list = None, model: str = "mistral-large-latest") -> dict:
         """
         Основной метод отправки текстового запроса к API Mistral.
         """
+        messages = []
+        if history:
+            messages.extend([{"role": msg["role"], "content": msg["content"]} for msg in history])
+        
+        messages.append({
+            "role": "user",
+            "content": text
+        })
+        
         response = self.client.chat.complete(
-            model = model,
-            messages = [
-                {
-                    "role": "user",
-                    "content": text
-                }
-            ]
+            model=model,
+            messages=messages
         )
-        # Формируем ответ в виде словаря для работы с историей чата
+        
         result = {
             "role": "assistant",
             "content": response.choices[0].message.content
         }
-
         return result
     
 
@@ -63,42 +66,39 @@ class ImageRequest:
 
     
     
-    def send(self, text: str, image_path: str, model: str = "pixtral-12b-2409") -> dict:
+    def send(self, text: str, image_path: str, history: list = None, model: str = "pixtral-12b-2409") -> dict:
         """
         Основной метод отправки мультимодального запроса, объединяющего текст и изображение.
         """
-        # Получаем изображение в формате base64
         base64_image = self.__encode_image(image_path)
-
-
-        # Формируем сообщение для чата
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": text
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": f"data:image/jpeg;base64,{base64_image}" 
-                    }
-                ]
-            }
-        ]
+        
+        messages = []
+        if history:
+            messages.extend([{"role": msg["role"], "content": msg["content"]} for msg in history])
+        
+        messages.append({
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": text
+                },
+                {
+                    "type": "image_url",
+                    "image_url": f"data:image/jpeg;base64,{base64_image}"
+                }
+            ]
+        })
         
         chat_response = self.client.chat.complete(
             model=model,
             messages=messages
         )
-
-        # Формируем ответ в виде словаря для работы с историей чата
+        
         result = {
             "role": "assistant",
             "content": chat_response.choices[0].message.content
         }
-
         return result
     
 
@@ -143,38 +143,56 @@ class ChatFacade:
         return model
     
 
+    def format_message(self, message: dict) -> str:
+        """
+        Форматирует сообщение для красивого вывода
+        """
+        emoji = "👤" if message["role"] == "user" else "🤖"
+        return f"{emoji} {message['content']}\n"
+
     def aks_question(self, text: str, image_path: str = None) -> dict:
         """
         Основной метод для отправки запроса.
         """
-        if image_path:
-            response = self.request.send(text=text, image_path=image_path, model=self.model)
-        else:
-            response = self.request.send(text=text, model=self.model)
+        # Создаем сообщение пользователя
+        user_message = {"role": "user", "content": text}
         
+        # Получаем текущую историю в нужном формате
+        current_history = [msg for _, msg in self.history]
+        
+        if image_path:
+            response = self.request.send(text=text, image_path=image_path, 
+                                      history=current_history, model=self.model)
+        else:
+            response = self.request.send(text=text, history=current_history, 
+                                      model=self.model)
+        
+        # Обновляем историю
+        self.history.append((text, user_message))
         self.history.append((text, response))
         return response
-    
 
-    def get_history(self) -> list[tuple[str, dict]]:
-        """
-        Возвращает историю запросов и ответов.
-        """
-        return self.history
-    
     def __call__(self):
         """
         Запуск фасада.
         """
+        print("🤖 Здравствуйте! Я готов помочь вам. Для выхода введите 'exit'")
+        
         while True:
-            text = input("Введите текст запроса: ")
+            text = input("\n👤 Введите текст запроса: ")
+            if text.lower() == 'exit':
+                print("🤖 До свидания!")
+                break
+                
             image_path = None
-            
             if isinstance(self.request, ImageRequest):
-                image_path = input("Введите путь к изображению: ")
-            response = self.aks_question(text=text, image_path= image_path if image_path else None)
-            print(response)
-            print(self.history)
+                image_path = input("👤 Введите путь к изображению: ")
+            
+            response = self.aks_question(text=text, 
+                                      image_path=image_path if image_path else None)
+            
+            # Красиво выводим последний ответ
+            print(self.format_message(response))
 
 
 # Запуск фасада
