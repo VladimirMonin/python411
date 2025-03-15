@@ -6,76 +6,53 @@
 MISTRAL_API_KEY = 'rVpNURaWOqKRqEiaPJooogXfE8zJ5dgj'
 
 # pip install mistralai
+from unittest import result
 from mistralai import Mistral
 import base64
 
-model = "mistral-large-latest"
 
-client = Mistral(api_key=MISTRAL_API_KEY)
+class TextRequest:
+    """
+    Класс отвечает за отправку текстовых запросов к API Mistral.
+    """
+    def __init__(self, api_key: str) -> None:
+        self.api_key = api_key
+        self.client = Mistral(api_key=self.api_key)
 
-chat_response = client.chat.complete(
-    model = model,
-    messages = [
-        {
-            "role": "user",
-            "content": "Расскажи шутку про обезъянку и любовь французов к устрицам"
-        },
-    ]
-)
+    def send(self, text: str, model: str = "mistral-large-latest") -> dict:
+        """
+        Основной метод отправки текстового запроса к API Mistral.
+        """
+        response = self.client.chat.complete(
+            model = model,
+            messages = [
+                {
+                    "role": "user",
+                    "content": text
+                }
+            ]
+        )
+        # Формируем ответ в виде словаря для работы с историей чата
+        result = {
+            "role": "assistant",
+            "content": response.choices[0].message.content
+        }
 
-print(chat_response.choices[0].message.content)
+        return result
+    
 
+"""
+2. **ImageRequest**  
+   Класс предназначен для отправки запросов, включающих изображение.
 
-###############################################
-
-
-def encode_image(image_path):
-    """Переводит изображение в формат base64"""
-    try:
-        with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode('utf-8')
-    except FileNotFoundError:
-        print(f"Error: The file {image_path} was not found.")
-        return None
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-
-# Путь к изображению
-image_path = r"C:\Users\user\Pictures\2025-01-18_14-07-29.png"
-
-# Получаем изображение в формате base64
-base64_image = encode_image(image_path)
-
-
-# Указываем модель для работы с изображениями
-model = "pixtral-12b-2409"
-
-# Создаем экземпляр клиента Mistral
-client = Mistral(api_key=MISTRAL_API_KEY)
-
-# Формируем сообщение для чата
-messages = [
-    {
-        "role": "user",
-        "content": [
-            {
-                "type": "text",
-                "text": "Детально опиши что изображено на этом изображении. Используй максимально подробные описания."
-            },
-            {
-                "type": "image_url",
-                "image_url": f"data:image/jpeg;base64,{base64_image}" 
-            }
-        ]
-    }
-]
-
-# Делаем запрос к API Mistral
-chat_response = client.chat.complete(
-    model=model,
-    messages=messages
-)
-
-# Печатаем ответ
-print(chat_response.choices[0].message.content)
+   Методы:
+   - `__init__(self, api_key: str) -> None`  
+     Инициализация с API-ключом.
+   - `send(self, text: str, image_path: str, model: str) -> dict`  
+     Отправка мультимодального запроса, объединяющего текст и изображение.  
+     Задачи метода:
+     - Загрузка изображения по указанному пути.
+     - Преобразование изображения в формат Base64.
+     - Формирование корректного JSON с текстовыми данными и данными изображения.
+     - Отправка запроса к API и обработка ответа.
+"""
