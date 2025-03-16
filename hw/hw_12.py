@@ -5,14 +5,25 @@
 MISTRAL_API_KEY = "rVpNURaWOqKRqEiaPJooogXfE8zJ5dgj"
 
 # pip install mistralai
-from typing import Any
+from typing import Any, List, Dict, Tuple, Optional, Union
 from mistralai import Mistral
 import base64
+from abc import ABC, abstractmethod
 
 
-class TextRequest:
+class MistralRequestStrategy(ABC):
     """
-    Класс отвечает за отправку текстовых запросов к API Mistral.
+    Абстрактный класс стратегии для работы с API Mistral.
+    """
+
+    @abstractmethod
+    def send(self, *args: Any, **kwargs: Any) -> dict:
+        pass
+
+
+class TextRequest(MistralRequestStrategy):
+    """
+    Класс стратегия отвечает за отправку текстовых запросов к API Mistral.
     """
 
     def __init__(self, api_key: str) -> None:
@@ -39,7 +50,7 @@ class TextRequest:
         return result
 
 
-class ImageRequest:
+class ImageRequest(MistralRequestStrategy):
     """
     Класс отвечает за отправку запросов, включающих изображение.
     """
@@ -100,48 +111,110 @@ class ImageRequest:
         return result
 
 
-class ChatFacade:
-    """ "
-    Фасад предоставляет единый интерфейс для пользователя и управляет взаимодействием с `TextRequest` и `ImageRequest`.
+class MistralRequestContext:
     """
-
+    Контекст для работы со стратегиями запросов к Mistral API.
+    Реализует классическую версию паттерна Стратегия.
+    """
     def __init__(self, api_key: str) -> None:
         self.api_key = api_key
         self.models = {"text": ["mistral-large-latest"], "image": ["pixtral-12b-2409"]}
-
-        self.request: TextRequest | ImageRequest = self.__set_request()
-        self.model: str = self.__set_model()
+        self.strategy: MistralRequestStrategy = None
+        self.model: str = None
+        self.history: List[Tuple[str, Dict]] = []
+        
+    def set_strategy(self, strategy_type: str) -> None:
+        """
+        Устанавливает стратегию в зависимости от типа запроса.
+        
+        Args:
+            strategy_type: "text" или "image"
+        """
+        if strategy_type == "text":
+            self.strategy = TextRequest(api_key=self.api_key)
+        elif strategy_type == "image":
+            self.strategy = ImageRequest(api_key=self.api_key)
+        else:
+            raise ValueError(f"Неизвестный тип стратегии: {strategy_type}")
+    
+    def set_model(self, model: str) -> None:
+        """
+        Устанавливает модель для текущей стратегии.
+        
+        Args:
+            model: название модели Mistral
+        """
+        strategy_type = "text" if isinstance(self.strategy, TextRequest) else "image"
+        if model not in self.models[strategy_type]:
+            raise ValueError(f"Модель {model} не доступна для стратегии {strategy_type}")
+        self.model = model
+    
+    def get_available_models(self) -> List[str]:
+        """
+        Возвращает список доступных моделей для текущей стратегии.
+        """
+        if not self.strategy:
+            return []
+        strategy_type = "text" if isinstance(self.strategy, TextRequest) else "image"
+        return self.models[strategy_type]
+    
+    def execute_request(self, text: str, image_path: Optional[str] = None) -> Dict:
+        """
+        Выполняет запрос с использованием текущей стратегии.
+        
+        Args:
+            text: текст запроса
+            image_path: путь к изображению (только для ImageRequest)
+            
+        Returns:
+            Словарь с ответом от API
+        """
+        if not self.strategy:
+            raise ValueError("Стратегия не установлена")
+            
+        # Создаем сообщение пользователя
+        user_message = {"role": "user", "content": text}
+        
+        # Получаем текущую историю в нужном формате
+        current_history = [msg for _, msg in self.history]
+        
+        # Отправляем запрос с использованием соответствующей стратегии
+        if isinstance(self.strategy, ImageRequest) and image_path:
+            response = self.strategy.send(
+                text=text,
+                image_path=image_path,
+                history=current_history,
+                model=self.model
+            )
+        elif isinstance(self.strategy, TextRequest):
+            response = self.strategy.send(
+                text=text,
+                history=current_history,
+                model=self.model
+            )
+        else:
+            raise ValueError("Несоответствие стратегии и параметров запроса")
+            
+        # Обновляем историю
+        self.history.append((text, user_message))
+        self.history.append((text, response))
+        
+        return response
+    
+    def clear_history(self) -> None:
+        """Очищает историю сообщений"""
         self.history = []
 
-    def __set_request(self) -> TextRequest | ImageRequest:
-        """
-        Возвращает объект TextRequest или ImageRequest в зависимости от выбора пользователя.
-        """
-        mode = input("Выберите режим запроса (1 - текстовый, 2 - с изображением): ")
 
-        if mode == "1":
-            return TextRequest(api_key=self.api_key)
-        elif mode == "2":
-            return ImageRequest(api_key=self.api_key)
-        else:
-            raise ValueError("Неверный режим запроса")
+class ChatFacade:
+    """
+    Фасад предоставляет единый интерфейс для пользователя и координирует
+    работу с контекстом запросов Mistral.
+    """
 
-    def __set_model(self) -> str:
-        """
-        Возвращает выбранную модель для запроса.
-        """
-        model = input(
-            f"Выберите модель из списка {self.models['text' if isinstance(self.request, TextRequest) else 'image']}: "
-        )
-        if (
-            model
-            not in self.models[
-                "text" if isinstance(self.request, TextRequest) else "image"
-            ]
-        ):
-            raise ValueError("Неверная модель")
-        return model
-
+    def __init__(self, api_key: str) -> None:
+        self.context = MistralRequestContext(api_key=api_key)
+        
     def format_message(self, message: dict) -> str:
         """
         Форматирует сообщение для красивого вывода
@@ -149,55 +222,62 @@ class ChatFacade:
         emoji = "👤" if message["role"] == "user" else "🤖"
         return f"{emoji} {message['content']}\n"
 
-    def aks_question(self, text: str, image_path: str = None) -> dict:
-        """
-        Основной метод для отправки запроса.
-        """
-        # Создаем сообщение пользователя
-        user_message = {"role": "user", "content": text}
-
-        # Получаем текущую историю в нужном формате
-        current_history = [msg for _, msg in self.history]
-
-        if image_path:
-            response = self.request.send(
-                text=text,
-                image_path=image_path,
-                history=current_history,
-                model=self.model,
-            )
-        else:
-            response = self.request.send(
-                text=text, history=current_history, model=self.model
-            )
-
-        # Обновляем историю
-        self.history.append((text, user_message))
-        self.history.append((text, response))
-        return response
-
     def __call__(self):
         """
         Запуск фасада.
         """
         print("🤖 Здравствуйте! Я готов помочь вам. Для выхода введите 'exit'")
+        
+        # Настраиваем стратегию и модель перед началом беседы
+        self._setup_strategy_and_model()
 
         while True:
             text = input("\n👤 Введите текст запроса: ")
             if text.lower() == "exit":
                 print("🤖 До свидания!")
                 break
+                
+            if text.lower() == "change":
+                self._setup_strategy_and_model()
+                continue
 
             image_path = None
-            if isinstance(self.request, ImageRequest):
+            if isinstance(self.context.strategy, ImageRequest):
                 image_path = input("👤 Введите путь к изображению: ")
 
-            response = self.aks_question(
-                text=text, image_path=image_path if image_path else None
-            )
-
-            # Красиво выводим последний ответ
-            print(self.format_message(response))
+            try:
+                response = self.context.execute_request(
+                    text=text, 
+                    image_path=image_path
+                )
+                # Красиво выводим ответ
+                print(self.format_message(response))
+            except Exception as e:
+                print(f"🚫 Произошла ошибка: {e}")
+    
+    def _setup_strategy_and_model(self):
+        """Настройка стратегии и модели через взаимодействие с пользователем"""
+        mode = input("Выберите режим запроса (1 - текстовый, 2 - с изображением): ")
+        
+        strategy_type = "text" if mode == "1" else "image" if mode == "2" else None
+        if not strategy_type:
+            print("⚠️ Неверный выбор. Установлен текстовый режим по умолчанию.")
+            strategy_type = "text"
+            
+        # Устанавливаем стратегию
+        self.context.set_strategy(strategy_type)
+        
+        # Получаем и показываем доступные модели
+        available_models = self.context.get_available_models()
+        model_prompt = f"Выберите модель из списка {available_models}: "
+        model = input(model_prompt)
+        
+        try:
+            self.context.set_model(model)
+        except ValueError:
+            default_model = available_models[0]
+            print(f"⚠️ Выбрана модель по умолчанию: {default_model}")
+            self.context.set_model(default_model)
 
 
 # Запуск фасада
