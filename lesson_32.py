@@ -2,56 +2,78 @@
 Lesson 32 - Поведенческие паттерны
 16.03.2025
 Пример паттерна Стратегия на примере технического анализа котировок крипты
+Пример паттерна Наблюдатель на примере крипторынка и разных автоматизаций (Уведомления, торговые боты)
 """
 
 from abc import ABC, abstractmethod
 
-
-class TechAnalysContext:
-    def __init__(self, strategy: "AbstractStrategy") -> None:
-        self.strategy = strategy
-
-    def set_strategy(self, strategy: "AbstractStrategy") -> None:
-        self.strategy = strategy
-
-    def execute_strategy(self, message: str) -> str:
-        return self.strategy.execute(message)
-
-
-class AbstractStrategy(ABC):
-
+class AbstractMarketObserver(ABC):
     @abstractmethod
-    def execute(self, message: str) -> str:
+    def update(self, data: dict) -> None:
         pass
 
 
-class StrategyAnalysOne(AbstractStrategy):
-    def execute(self, message: str) -> str:
-        return f"Анализ 1: {message}"
+class NotifyMarketObserver(AbstractMarketObserver):
+    def update(self, data: dict) -> None:
+        BTC = data.get("BTC", 0)
+        ETH = data.get("ETH", 0)
+
+        if BTC > 100000:
+            print("BTC подорожал больше чем на 100000")
+
+        if ETH > 5000:
+            print("ETH подорожал больше чем на 5000")
 
 
-class StrategyAnalysTwo(AbstractStrategy):
-    def execute(self, message: str) -> str:
-        return f"Анализ 2: {message}"
+class TradeMarketObserver(AbstractMarketObserver):
+    def update(self, data: dict) -> None:
+        TON = data.get("TON", 0)
+        LTC = data.get("LTC", 0)
+
+        if TON > 5:
+            print("Дурова выпустили из тюрьмы, TON вырос выше 5 ПРОДАЕМ!")
+
+        if LTC > 100:
+            print("LTC вырос выше 100 ПОКУПАТЬ")
 
 
-# Тестируем. 1. Делаем ветвление. 2. Спрашиваем у пользователя что он хочет. 3. Создаем контекст с подходящей стратегией. 4. Запускаем
+class Market:
+    def __init__(self, api_key: str) -> None:
+        self.api_key = api_key
+        self.observers = []
+        self.data = {}
 
-user_choice = input('Введите статегию анализа (1|2): ')
+    
+    def add_observer(self, observer: AbstractMarketObserver) -> None:
+        self.observers.append(observer)
 
-try:
-    int_choice = int(user_choice)
+    def remove_observer(self, observer: AbstractMarketObserver) -> None:
+        self.observers.remove(observer)
 
-except ValueError:
-    print('Введите 1 или 2')
-    exit(1)
+    def _notify_observers(self, new_data: dict) -> None:
+        for observer in self.observers:
+            observer.update(self.data)
 
-if int_choice == 1:
-    strategy = StrategyAnalysOne()
-elif int_choice == 2:
-    strategy = StrategyAnalysTwo()
+    def set_data(self, new_data: dict) -> None:
+        # Обновление словаря
+        self.data.update(new_data)
+        # Оповещение наблюдателей
+        self._notify_observers(new_data)
 
-context = TechAnalysContext(strategy)
-message = input('Введите сообщение для анализа: ')
-result =context.execute_strategy(message)
-print(result)
+
+if __name__ == "__main__":
+    # Создаем рынок
+    market = Market(api_key="123")
+    
+    # Создаем наблюдателей
+    notify_observer = NotifyMarketObserver()
+    trade_observer = TradeMarketObserver()
+
+    # Регистрируем наблюдателей
+    market.add_observer(notify_observer)
+    market.add_observer(trade_observer)
+
+    # Обновляем данные на рынке
+    market.set_data({"NOT": 100})
+    market.set_data({"TON": 10, "LTC": 200})
+    market.set_data({"BTC": 10000000, "ETH": 50000})
