@@ -52,7 +52,7 @@ class Market:
 
     def _notify_observers(self, new_data: dict) -> None:
         for observer in self.observers:
-            observer.update(self.data)
+            observer.update(new_data)
 
     def set_data(self, new_data: dict) -> None:
         # Обновление словаря
