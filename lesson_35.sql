@@ -132,5 +132,33 @@ HAVING COUNT(*) > 10
 SELECT HAIR, EYE, GROUP_CONCAT(Name) AS Names
 FROM MarvelCharacters
 WHERE YEAR BETWEEN 1960 AND 1969 AND EYE = 'Blye EYE' AND HAIR = 'Blond Hair'
-GROUP BY HAIR, EYE
+GROUP BY HAIR, EYE;
 
+
+-- Выборка имен похожих на man +  Группировка по цвету глаз + Вывод имен через CONCAT
+SELECT EYE, GROUP_CONCAT(Name) AS Names
+FROM MarvelCharacters
+WHERE Name LIKE '%spider%'
+GROUP BY EYE;
+
+
+-- Группировка по году
+SELECT YEAR, COUNT(*) AS Count
+FROM MarvelCharacters
+GROUP BY YEAR
+ORDER BY YEAR DESC;
+
+-- А если мы хотим сделать декады?
+SELECT YEAR / 10 * 10 AS Decade, COUNT(*) AS Count
+FROM MarvelCharacters
+GROUP BY Decade
+ORDER BY Decade DESC;
+
+-- 1945 / 10 = 194 При деленеии дробная часть отсекается
+-- 194 * 10 = 1940
+
+SELECT YEAR / 10 * 10 AS Decade, COUNT(*) AS TotalChar, MAX(APPEARANCES) AS MaxAppearances
+
+FROM MarvelCharacters
+GROUP BY Decade
+ORDER BY Decade DESC;
