@@ -115,8 +115,97 @@ FROM students
 LEFT JOIN groups ON students.group_id = groups.id;
 
 
--- Сделать преподов
--- Сделать Многие-ко-многим преподы и группы
+-- Таблица преподавателей
+CREATE TABLE IF NOT EXISTS teachers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name TEXT NOT NULL,
+    middle_name TEXT,
+    last_name TEXT NOT NULL,
+    age INTEGER,
+    phone TEXT NOT NULL,
+    email TEXT
+)
+
+-- Таблица ПреподавателиГруппы - для связи Многие-ко-многим
+
+CREATE TABLE IF NOT EXISTS teachers_groups (
+    teacher_id INTEGER,
+    group_id INTEGER,
+    date_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- тайметка в формате 2025-04-06 12:00:00
+    FOREIGN KEY (teacher_id) REFERENCES teachers(id),
+    FOREIGN KEY (group_id) REFERENCES groups(id),
+    -- UNIQUE (teacher_id, group_id), -- уникальная пара
+    PRIMARY KEY (teacher_id, group_id) -- составной первичный ключ
+);
+
+-- TIMESTAMP DEFAULT CURRENT_TIMESTAMP - это поле будет автоматически заполняться текущей датой и временем при добавлении записи
+-- 
+
+-- Добавим еще 2 группы
+INSERT INTO groups (group_name)
+VALUES ("python412"), ("python413");
+
+
+-- Добавим преподавателей
+INSERT INTO teachers (first_name, last_name, phone)
+VALUES
+("Сергей", "Бурунов", "+7(999)999-99-99"),
+("Станислав", "Петров", "+7(888)888-88-88"),
+("Григорий", "Безруков", "+7(777)777-77-77"),
+("Тарзан", "Тарзанович", "+7(666)666-66-66");
+
+-- Сделать связку преподавателей и групп
+INSERT INTO teachers_groups (teacher_id, group_id)
+VALUES
+(1, 1),
+(1, 2);
+
+
+-- Найти ID Петрова, и найти ID группы python412 и назначить его преподавателем в эту группу
+
+INSERT INTO teachers_groups (teacher_id, group_id)
+VALUES
+((SELECT id FROM teachers WHERE last_name = "Петров"),
+(SELECT id FROM groups WHERE group_name = "python412"));
+
+
+-- Выборка всех групп и преподавателей
+-- Тут 3 запроса. По сути мы просто выбираем, какая таблица будет "Левая" - FROM
+-- А какие будем присоединять через JOIN
+
+-- Основная таблица - teachers_groups
+SELECT tch.first_name, tch.last_name, g.group_name
+FROM teachers_groups tg
+JOIN teachers tch ON tg.teacher_id = tch.id
+JOIN groups g ON tg.group_id = g.id;
+
+-- Основная таблица - teachers
+SELECT tch.first_name, tch.last_name, g.group_name
+FROM teachers tch
+JOIN teachers_groups tg ON tch.id = tg.teacher_id
+JOIN groups g ON tg.group_id = g.id;
+
+-- Основная таблица - groups
+SELECT tch.first_name, tch.last_name, g.group_name
+FROM groups g
+JOIN teachers_groups tg ON g.id = tg.group_id
+JOIN teachers tch ON tg.teacher_id = tch.id;
+
+
+
+-- Получить всех преподавателей группы python412
+SELECT tch.first_name AS f_name, tch.last_name AS l_name
+FROM teachers tch
+JOIN teachers_groups tg ON tch.id = tg.teacher_id
+JOIN groups g ON tg.group_id = g.id
+WHERE g.group_name = "python412";
+
+
+SELECT tch.first_name, tch.last_name, GROUP_CONCAT(g.group_name) AS groups, COUNT(g.group_name) AS count_groups
+FROM teachers tch
+JOIN teachers_groups tg ON tch.id = tg.teacher_id
+JOIN groups g ON tg.group_id = g.id
+GROUP BY tch.id;
 
 -- Создать студ-билеты. 
 -- Сделать Один-к-одному студ-билет и студент
