@@ -73,6 +73,46 @@ CREATE TABLE
         PRIMARY KEY (teacher_id, profession_id) -- составной первичный ключ
     );
 
+-- СОЗДАНИЕ ИНДЕКСОВ ------------------
+
+-- Индекс по фамилии студентов (для быстрого поиска и сортировки)
+CREATE INDEX idx_students_lastname ON students(last_name);
+
+-- Составной индекс для поиска по имени и фамилии
+CREATE INDEX idx_students_fullname ON students(first_name, middle_name, last_name);
+
+-- Индекс по group_id для быстрого поиска всех студентов группы
+CREATE INDEX idx_students_group ON students(group_id);
+
+-- Индекс по фамилии преподавателей
+CREATE INDEX idx_teachers_lastname ON teachers(last_name);
+
+-- Индекс по ФИО преподов
+CREATE INDEX idx_teachers_fullname ON teachers(first_name, middle_name, last_name);
+
+-- Индекс препода по телефону (если часто ищут по телефону)
+CREATE INDEX idx_teachers_phone ON teachers(phone);
+
+-- Индекс препода по email (если часто ищут по email)
+CREATE INDEX idx_teachers_email ON teachers(email);
+
+-- Индекс по названию группы (хотя у тебя уже есть UNIQUE)
+CREATE INDEX idx_groups_name ON groups(group_name);
+
+-- Индекс по profession_id для быстрого поиска групп по профессии
+CREATE INDEX idx_groups_profession ON groups(profession_id);
+
+-- Индексы для таблиц многие ко многим.
+-- Составные первичные ключи, хорошая вещь. Это индекс по-умолчанию. Но он будет хорошо работать только по поиску где в запрос входит ОБА поля или ПЕРВОЕ поле. А вот для второго будет работать медленно.age
+
+
+-- Индекс для teachers_groups поля group_id
+CREATE INDEX idx_teachers_groups_group ON teachers_groups(group_id);
+
+--Индекс для teachers_professions поля profession_id
+CREATE INDEX idx_teachers_professions_profession ON teachers_professions(profession_id);
+
+
 -- Транзакция - возможность сделать серию операций SQL неделимыми, атомарными. Провести серию оперций как одну. С возможностью всегда вернуться к исходному состоянию, если что-то пошло не так.
 --BEGIN TRANSACTION -- откроет транзакцию
 --ROLLBACK -- откат назад
