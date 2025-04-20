@@ -284,6 +284,13 @@ class Teacher(pw.Model):
     phone = pw.CharField(max_length=15)
     email = pw.CharField(null=True, max_length=50)
 
+
+    def get_all_students(self):
+        return Student.select().join(Group).join(TeacherGroup).where(TeacherGroup.teacher == self)
+
+    def __str__(self):
+        return f"Имя: {self.first_name}, Фамилия: {self.last_name}, Телефон: {self.phone}"
+
     class Meta:
         database = db  # Указываем базу данных для этой модели
         table_name = "teachers"  # Указываем имя таблицы в базе данных
@@ -367,3 +374,46 @@ print(group_1)
 group_name = "python411"
 students = Student.select().where(Student.group == group_name)
 [print(student) for student in students]  # Получаем всех студентов группы 1 без backref
+
+
+
+# 1. Получить всех преподавателей и вывести их на экран
+all_teachers = Teacher.select()
+print("Все преподаватели:")
+[print(teacher) for teacher in all_teachers]  # Получаем всех преподавателей и выводим их на экран
+
+# 2. Взять первого преподавателя и посмотреть его группы
+teacher_1 = all_teachers[0]  # Берем первого преподавателя
+print("Первый преподаватель:", teacher_1)
+
+# Делаем выборку из связующей таблицы TeacherGroup, где teacher_id == teacher_1_id
+# В результате получаем все группы в формате связки многие-ко-многим 1-1 1-2 1-3 где работает преподаватель 1
+teacher_groups = TeacherGroup.select().where(TeacherGroup.teacher == teacher_1)  # Получаем группы первого преподавателя
+
+# Идем по связке циклом, и обращаясь к group_id добываем название групп
+print("Группы первого преподавателя:")
+[print(record.group.group_name) for record in teacher_groups]  # Выводим группы первого преподавателя
+
+# Так как описан __str__ мы можем просто вывести teacher_groups
+[print(record) for record in teacher_groups]  # Выводим группы первого преподавателя с использованием __str__
+
+
+# 3. Взять препода с ID 1  и посмотреть его профессии
+teacher_1_professions = TeacherProfession.select().where(TeacherProfession.teacher == 1)  # Получаем профессии первого преподавателя
+print("Профессии первого преподавателя:")
+
+[print(record.profession.title) for record in teacher_1_professions]  # Выводим профессии первого преподавателя
+[print(record) for record in teacher_1_professions]  # Выводим профессии первого преподавателя с использованием __str__
+
+
+# 4. Взять первого преподавателя и посмотреть его студентов + названия их групп
+teacher_1_students = Student.select().join(Group).join(TeacherGroup).where(TeacherGroup.teacher == teacher_1)  # Получаем студентов первого преподавателя
+
+print("Студенты первого преподавателя:")
+[print(student) for student in teacher_1_students]  # Выводим студентов первого преподавателя
+
+# Протестируем метод get_all_students
+print("Студенты первого преподавателя через метод get_all_students:")
+all_students_of_teacher_1 = teacher_1.get_all_students()
+
+[print(student) for student in all_students_of_teacher_1]  # Выводим студентов первого преподавателя через метод get_all_students
